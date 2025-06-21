@@ -12,20 +12,20 @@ import { useFrame } from "@react-three/fiber"
 import type {
   LiquidGlassProps,
   AnimationValues,
-  InteractionState,
+  // InteractionState,
 } from "./liquid-glass.types"
 import { useAnimation } from "../hooks/useAnimation"
 import { useGlassInteractions } from "../hooks/useGlassInteractions"
 import {
   createRoundedRectShape,
   parseColor,
-  mergeTransitions,
+  // mergeTransitions,
 } from "./liquid-glass.utils"
 import {
   DEFAULT_PROPS,
   DEFAULT_ANIMATIONS,
   DEFAULT_EXTRUDE_SETTINGS,
-  GLASS_PRESETS,
+  // GLASS_PRESETS,
 } from "./liquid-glass.constants"
 
 export interface LiquidGlassRef {
@@ -65,20 +65,20 @@ const LiquidGlass = forwardRef<LiquidGlassRef, LiquidGlassProps>(
       whileTap,
       whileActive,
       whileDisabled,
-      whileInView,
+      // whileInView,
 
       // State
       active = DEFAULT_PROPS.active,
       disabled = DEFAULT_PROPS.disabled,
-      loading = false,
+      // loading = false,
 
       // Animation control
       variants,
       initial = "idle",
       animate,
-      exit,
+      // exit,
       transition,
-      layoutId,
+      // layoutId,
 
       // Event handlers
       onClick,
@@ -143,14 +143,18 @@ const LiquidGlass = forwardRef<LiquidGlassRef, LiquidGlassProps>(
     ])
 
     // Animation system
-    const { animationState, applyAnimation, getCurrentAnimation, isAnimating } =
-      useAnimation(
-        position,
-        transition,
-        onAnimationStart,
-        onAnimationComplete,
-        onAnimationUpdate
-      )
+    const {
+      animationState,
+      applyAnimation,
+      getCurrentAnimation,
+      /* isAnimating */
+    } = useAnimation(
+      position,
+      transition,
+      onAnimationStart,
+      onAnimationComplete,
+      onAnimationUpdate
+    )
 
     // Interaction handling
     const { isHovered, isPressed, handlers } = useGlassInteractions(

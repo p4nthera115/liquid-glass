@@ -60,11 +60,11 @@ export function useGlassInteractions(
   )
 
   // Handle global pointer up (for cases where pointer leaves element while pressed)
-  const handleGloablPointerUp = useCallback(() => {
-    if (isPressed) {
-      setIsPressed(false)
-    }
-  }, [isPressed])
+  // const handleGlobalPointerUp = useCallback(() => {
+  //   if (isPressed) {
+  //     setIsPressed(false)
+  //   }
+  // }, [isPressed])
 
   return {
     isHovered,
