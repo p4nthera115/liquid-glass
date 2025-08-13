@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #fff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -14,6 +14,8 @@
 }
 
 .canvas {
-  height: screen;
+  height: 100dvh;
   width: screen;
+  min-height: 100dvh;
+  border: #000 solid;
 }

@@ -1,329 +1,366 @@
-import React, {
-  useMemo,
-  useRef,
-  useEffect,
-  useCallback,
-  forwardRef,
-} from "react"
 import { MeshTransmissionMaterial } from "@react-three/drei"
+import { useMemo, useRef, useState, useEffect, useCallback } from "react"
 import * as THREE from "three"
 import { useFrame } from "@react-three/fiber"
 
-import type {
-  LiquidGlassProps,
-  AnimationValues,
-  // InteractionState,
-} from "./liquid-glass.types"
-import { useAnimation } from "../hooks/useAnimation"
-import { useGlassInteractions } from "../hooks/useGlassInteractions"
+import type { LiquidGlassProps, AnimationValues } from "./types"
+import { DEFAULT_PROPS, DEFAULT_ANIMATIONS } from "./constants"
 import {
-  createRoundedRectShape,
   parseColor,
-  // mergeTransitions,
-} from "./liquid-glass.utils"
-import {
-  DEFAULT_PROPS,
-  DEFAULT_ANIMATIONS,
-  DEFAULT_EXTRUDE_SETTINGS,
-  // GLASS_PRESETS,
-} from "./liquid-glass.constants"
+  createRoundedRectangleShape,
+  mergeAnimations,
+} from "./utils"
 
-export interface LiquidGlassRef {
-  mesh: THREE.Mesh | null
-  animate: (animation: AnimationValues) => void
-  getAnimationState: () => AnimationValues
-  reset: () => void
-}
+export default function LiquidGlass({
+  width = DEFAULT_PROPS.width,
+  height = DEFAULT_PROPS.height,
+  borderRadius = DEFAULT_PROPS.borderRadius,
+  borderSmoothness = DEFAULT_PROPS.borderSmoothness,
+  position = DEFAULT_PROPS.position,
 
-const LiquidGlass = forwardRef<LiquidGlassRef, LiquidGlassProps>(
-  (
-    {
-      // Geometry props
-      width = DEFAULT_PROPS.width,
-      height = DEFAULT_PROPS.height,
-      borderRadius = DEFAULT_PROPS.borderRadius,
-      position = DEFAULT_PROPS.position,
-      rotation,
-      scale,
-      extrudeSettings = DEFAULT_EXTRUDE_SETTINGS,
-      segments = 8,
+  transmission = DEFAULT_PROPS.transmission,
+  roughness = DEFAULT_PROPS.roughness,
+  ior = DEFAULT_PROPS.ior,
+  chromaticAberration = DEFAULT_PROPS.chromaticAberration,
+  anisotropicBlur = DEFAULT_PROPS.anisotropicBlur,
+  blur = DEFAULT_PROPS.blur,
+  color = DEFAULT_PROPS.color,
+  thickness = DEFAULT_PROPS.thickness,
+  wireframe = DEFAULT_PROPS.wireframe,
 
-      // Material props - allow preset override
-      // preset,
-      transmission = DEFAULT_PROPS.transmission,
-      roughness = DEFAULT_PROPS.roughness,
-      ior = DEFAULT_PROPS.ior,
-      chromaticAberration = DEFAULT_PROPS.chromaticAberration,
-      color = DEFAULT_PROPS.color,
-      thickness = DEFAULT_PROPS.thickness,
-      clearcoat,
-      clearcoatRoughness,
-      envMapIntensity,
+  whileHover,
+  whileTap,
+  whileActive,
+  whileDisabled,
 
-      // Animation state props
-      whileHover,
-      whileTap,
-      whileActive,
-      whileDisabled,
-      // whileInView,
+  active = false,
+  disabled = false,
 
-      // State
-      active = DEFAULT_PROPS.active,
-      disabled = DEFAULT_PROPS.disabled,
-      // loading = false,
+  onClick,
+  onToggle,
+  onHoverStart,
+  onHoverEnd,
+  onTapStart,
+  onTapEnd,
 
-      // Animation control
-      variants,
-      initial = "idle",
-      animate,
-      // exit,
-      transition,
-      // layoutId,
+  springStrength = DEFAULT_PROPS.springStrength,
+  damping = DEFAULT_PROPS.damping,
+  animationThreshold = DEFAULT_PROPS.animationThreshold,
 
-      // Event handlers
-      onClick,
-      onToggle,
-      onHoverStart,
-      onHoverEnd,
-      onTapStart,
-      onTapEnd,
-      onAnimationStart,
-      onAnimationComplete,
-      onAnimationUpdate,
+  extrudeSettings = DEFAULT_PROPS.extrudeSettings,
 
-      // Accessibility
-      "aria-label": ariaLabel,
-      "aria-pressed": ariaPressed,
-      "aria-disabled": ariaDisabled,
-      "aria-describedby": ariaDescribedBy,
-      role = "button",
-      tabIndex = DEFAULT_PROPS.tabIndex,
+  // tabIndex = 0,
+  "aria-label": ariaLabel,
+}: LiquidGlassProps) {
+  const meshRef = useRef<THREE.Mesh>(null)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isPressed, setIsPressed] = useState(false)
 
-      // Performance
-      frustumCulled = true,
-      renderOrder = 0,
+  // Enhanced animation state with width/height instead of scale
+  const animationState = useRef({
+    // Current values
+    currentWidth: width,
+    currentHeight: height,
+    currentScaleZ: 1,
+    currentPosition: [...position] as [number, number, number],
+    currentRotation: [0, 0, 0] as [number, number, number],
+    currentOpacity: 1,
 
-      // Content
-      children,
-    },
-    ref
-  ) => {
-    const meshRef = useRef<THREE.Mesh>(null)
+    // Target values
+    targetWidth: width,
+    targetHeight: height,
+    targetScaleZ: 1,
+    targetPosition: [...position] as [number, number, number],
+    targetRotation: [0, 0, 0] as [number, number, number],
+    targetOpacity: 1,
 
-    // Get material properties (with preset support)
-    const materialProps = useMemo(() => {
-      const baseProps = {
-        transmission,
-        roughness,
-        ior,
-        chromaticAberration,
-        color: parseColor(color),
-        thickness,
-        clearcoat,
-        clearcoatRoughness,
-        envMapIntensity,
-      }
+    // Velocities for spring physics
+    widthVelocity: 0,
+    heightVelocity: 0,
+    scaleZVelocity: 0,
+    positionVelocity: [0, 0, 0] as [number, number, number],
+    rotationVelocity: [0, 0, 0] as [number, number, number],
+    opacityVelocity: 0,
 
-      // if (preset && GLASS_PRESETS[preset]) {
-      //   return { ...GLASS_PRESETS[preset], ...baseProps }
-      // }
+    // Base values for calculations
+    basePosition: [...position] as [number, number, number],
+    baseWidth: width,
+    baseHeight: height,
+  })
 
-      return baseProps
-    }, [
-      // preset,
-      transmission,
-      roughness,
-      ior,
-      chromaticAberration,
-      color,
-      thickness,
-      clearcoat,
-      clearcoatRoughness,
-      envMapIntensity,
-    ])
+  // Track if geometry needs to be updated
+  const [geometryUpdateFlag, setGeometryUpdateFlag] = useState(0)
 
-    // Animation system
-    const {
-      animationState,
-      applyAnimation,
-      getCurrentAnimation,
-      /* isAnimating */
-    } = useAnimation(
-      position,
-      transition,
-      onAnimationStart,
-      onAnimationComplete,
-      onAnimationUpdate
+  // * GEOMETRY - Create shape for extrusion with dynamic dimensions
+  const shape = useMemo(() => {
+    const currentWidth = animationState.current?.currentWidth || width
+    const currentHeight = animationState.current?.currentHeight || height
+
+    return createRoundedRectangleShape(
+      currentWidth,
+      currentHeight,
+      borderRadius,
+      borderSmoothness
     )
+  }, [width, height, borderRadius, borderSmoothness, geometryUpdateFlag])
 
-    // Interaction handling
-    const { isHovered, isPressed, handlers } = useGlassInteractions(
-      disabled,
-      active,
-      {
-        onClick,
-        onToggle,
-        onHoverStart,
-        onHoverEnd,
-        onTapStart,
-        onTapEnd,
-      }
-    )
+  // Get current animation based on state with proper layering
+  const getCurrentAnimation = useCallback((): AnimationValues => {
+    let baseAnimation: AnimationValues = {}
 
-    // Geometry creation with memoization
-    const shape = useMemo(() => {
-      return createRoundedRectShape(width, height, borderRadius, segments)
-    }, [width, height, borderRadius, segments])
+    if (active) {
+      baseAnimation = whileActive || DEFAULT_ANIMATIONS.whileActive
+    }
 
-    // Get current animation based on state
-    const getCurrentAnimationState = useCallback((): AnimationValues => {
-      // Priority order: disabled > pressed > focused > hovered > active > variants
-      if (disabled && (whileDisabled || variants?.disabled)) {
-        return (
-          whileDisabled ||
-          variants?.disabled ||
-          DEFAULT_ANIMATIONS.whileDisabled
-        )
-      }
-
-      if (isPressed && (whileTap || variants?.tap)) {
-        return whileTap || variants?.tap || DEFAULT_ANIMATIONS.whileTap
-      }
-
-      if (isHovered && (whileHover || variants?.hovered)) {
-        return whileHover || variants?.hovered || DEFAULT_ANIMATIONS.whileHover
-      }
-
-      if (active && (whileActive || variants?.active)) {
-        return whileActive || variants?.active || DEFAULT_ANIMATIONS.whileActive
-      }
-
-      // Handle explicit animate prop
-      if (animate) {
-        if (typeof animate === "string" && variants?.[animate]) {
-          return variants[animate]
-        }
-        if (typeof animate === "object") {
-          return animate
-        }
-      }
-
-      // Handle initial state
-      if (typeof initial === "string" && variants?.[initial]) {
-        return variants[initial]
-      }
-      if (typeof initial === "object") {
-        return initial
-      }
-
-      return {}
-    }, [
-      disabled,
-      isPressed,
-      isHovered,
-      active,
-      animate,
-      initial,
-      variants,
-      whileDisabled,
-      whileTap,
-      whileHover,
-      whileActive,
-    ])
-
-    // Apply animation when state changes
-    useEffect(() => {
-      const currentAnimation = getCurrentAnimationState()
-      applyAnimation(currentAnimation)
-    }, [getCurrentAnimationState, applyAnimation])
-
-    // Apply mesh transforms each frame
-    useFrame(() => {
-      if (!meshRef.current) return
-
-      const state = animationState.current.current
-
-      meshRef.current.position.set(state.x, state.y, state.z)
-      meshRef.current.scale.set(state.scaleX, state.scaleY, state.scaleZ)
-      meshRef.current.rotation.set(
-        state.rotationX,
-        state.rotationY,
-        state.rotationZ
+    if (disabled) {
+      return mergeAnimations(
+        baseAnimation,
+        whileDisabled || DEFAULT_ANIMATIONS.whileDisabled
       )
+    }
 
-      // Handle material opacity
-      if (meshRef.current.material && "opacity" in meshRef.current.material) {
-        const material = meshRef.current.material as THREE.Material & {
-          opacity: number
-        }
-        material.opacity = state.opacity
-        material.transparent = state.opacity < 1
-      }
-    })
+    if (isPressed) {
+      return mergeAnimations(
+        baseAnimation,
+        whileTap || DEFAULT_ANIMATIONS.whileTap
+      )
+    }
 
-    // Imperative API via ref
-    React.useImperativeHandle(ref, () => ({
-      mesh: meshRef.current,
-      animate: applyAnimation,
-      getAnimationState: getCurrentAnimation,
-      reset: () => {
-        applyAnimation({})
-      },
-    }))
+    if (isHovered) {
+      return mergeAnimations(
+        baseAnimation,
+        whileHover || DEFAULT_ANIMATIONS.whileHover
+      )
+    }
 
-    // Cleanup
-    // useEffect(() => {
-    //   return () => {
-    //     if (meshRef.current) {
-    //       disposeObject3D(meshRef.current)
-    //     }
-    //   }
-    // }, [])
+    return baseAnimation
+  }, [
+    disabled,
+    isPressed,
+    isHovered,
+    active,
+    whileDisabled,
+    whileTap,
+    whileHover,
+    whileActive,
+  ])
 
-    // Apply scale prop if provided
-    const finalScale = useMemo(() => {
-      if (typeof scale === "number") {
-        return [scale, scale, scale] as [number, number, number]
-      }
-      if (Array.isArray(scale)) {
-        return scale
-      }
-      return [1, 1, 1] as [number, number, number]
-    }, [scale])
+  // Apply animation targets with width/height instead of scale
+  const applyAnimation = useCallback((animation: AnimationValues) => {
+    const state = animationState.current
 
-    return (
-      <group scale={finalScale} rotation={rotation}>
-        <mesh
-          ref={meshRef}
-          position={position}
-          frustumCulled={frustumCulled}
-          renderOrder={renderOrder}
-          receiveShadow
-          castShadow
-          {...handlers}
-          // Accessibility attributes
-          userData={{
-            "aria-label": ariaLabel,
-            "aria-pressed":
-              ariaPressed ?? (role === "button" ? active : undefined),
-            "aria-disabled": ariaDisabled ?? disabled,
-            "aria-describedby": ariaDescribedBy,
-            role,
-            tabIndex: disabled ? -1 : tabIndex,
-          }}
-        >
-          <extrudeGeometry args={[shape, extrudeSettings]} />
-          <MeshTransmissionMaterial
-            {...materialProps}
-            background={materialProps.color}
-          />
-          {children}
-        </mesh>
-      </group>
-    )
-  }
-)
+    let targetWidth = state.baseWidth
+    let targetHeight = state.baseHeight
+    let scaleZ = 1
 
-LiquidGlass.displayName = "LiquidGlass"
+    if (animation.width !== undefined) {
+      targetWidth = animation.width
+    }
+    if (animation.height !== undefined) {
+      targetHeight = animation.height
+    }
 
-export default LiquidGlass
+    if (animation.scale !== undefined) {
+      targetWidth = state.baseWidth * animation.scale
+      targetHeight = state.baseHeight * animation.scale
+      scaleZ = animation.scale
+    }
+
+    if (animation.scaleX !== undefined) {
+      targetWidth = state.baseWidth * animation.scaleX
+    }
+    if (animation.scaleY !== undefined) {
+      targetHeight = state.baseHeight * animation.scaleY
+    }
+    if (animation.scaleZ !== undefined) {
+      scaleZ = animation.scaleZ
+    }
+
+    state.targetWidth = targetWidth
+    state.targetHeight = targetHeight
+    state.targetScaleZ = scaleZ
+
+    state.targetPosition = [
+      animation.x ?? state.basePosition[0],
+      animation.y ?? state.basePosition[1],
+      animation.z ?? state.basePosition[2],
+    ]
+    state.targetRotation = [
+      animation.rotateX ?? 0,
+      animation.rotateY ?? 0,
+      animation.rotateZ ?? 0,
+    ]
+    state.targetOpacity = animation.opacity ?? 1
+  }, [])
+
+  // Update animation when state changes
+  useEffect(() => {
+    animationState.current.basePosition = [...position]
+    animationState.current.baseWidth = width
+    animationState.current.baseHeight = height
+
+    const currentAnimation = getCurrentAnimation()
+    applyAnimation(currentAnimation)
+  }, [getCurrentAnimation, applyAnimation, position, width, height])
+
+  // Enhanced spring animation frame loop with geometry updates
+  useFrame((_, delta) => {
+    if (!meshRef.current) return
+
+    const state = animationState.current
+    let geometryNeedsUpdate = false
+
+    // Spring physics for width
+    const widthDisplacement = state.targetWidth - state.currentWidth
+    const widthSpringForce = widthDisplacement * springStrength
+    state.widthVelocity =
+      (state.widthVelocity + widthSpringForce * delta) * damping
+    state.currentWidth += state.widthVelocity * delta * 50
+
+    // Spring physics for height
+    const heightDisplacement = state.targetHeight - state.currentHeight
+    const heightSpringForce = heightDisplacement * springStrength
+    state.heightVelocity =
+      (state.heightVelocity + heightSpringForce * delta) * damping
+    state.currentHeight += state.heightVelocity * delta * 50
+
+    // Spring physics for Z scale
+    const scaleZDisplacement = state.targetScaleZ - state.currentScaleZ
+    const scaleZSpringForce = scaleZDisplacement * springStrength
+    state.scaleZVelocity =
+      (state.scaleZVelocity + scaleZSpringForce * delta) * damping
+    state.currentScaleZ += state.scaleZVelocity * delta * 50
+
+    // Check if geometry needs updating
+    if (
+      Math.abs(widthDisplacement) > animationThreshold ||
+      Math.abs(heightDisplacement) > animationThreshold
+    ) {
+      geometryNeedsUpdate = true
+    }
+
+    // Stop small movements for dimensions
+    if (
+      Math.abs(widthDisplacement) < animationThreshold &&
+      Math.abs(state.widthVelocity) < animationThreshold
+    ) {
+      state.currentWidth = state.targetWidth
+      state.widthVelocity = 0
+    }
+    if (
+      Math.abs(heightDisplacement) < animationThreshold &&
+      Math.abs(state.heightVelocity) < animationThreshold
+    ) {
+      state.currentHeight = state.targetHeight
+      state.heightVelocity = 0
+    }
+    if (
+      Math.abs(scaleZDisplacement) < animationThreshold &&
+      Math.abs(state.scaleZVelocity) < animationThreshold
+    ) {
+      state.currentScaleZ = state.targetScaleZ
+      state.scaleZVelocity = 0
+    }
+
+    // Spring physics for position
+    for (let i = 0; i < 3; i++) {
+      const positionDisplacement =
+        state.targetPosition[i] - state.currentPosition[i]
+      const positionSpringForce = positionDisplacement * springStrength
+      state.positionVelocity[i] =
+        (state.positionVelocity[i] + positionSpringForce * delta) * damping
+      state.currentPosition[i] += state.positionVelocity[i] * delta * 50
+    }
+
+    // Spring physics for rotation
+    for (let i = 0; i < 3; i++) {
+      const rotationDisplacement =
+        state.targetRotation[i] - state.currentRotation[i]
+      const rotationSpringForce = rotationDisplacement * springStrength
+      state.rotationVelocity[i] =
+        (state.rotationVelocity[i] + rotationSpringForce * delta) * damping
+      state.currentRotation[i] += state.rotationVelocity[i] * delta * 50
+    }
+
+    // Spring physics for opacity
+    const opacityDisplacement = state.targetOpacity - state.currentOpacity
+    const opacitySpringForce = opacityDisplacement * springStrength
+    state.opacityVelocity =
+      (state.opacityVelocity + opacitySpringForce * delta) * damping
+    state.currentOpacity += state.opacityVelocity * delta * 50
+
+    // Apply transformations - only scaleZ, position, and rotation
+    meshRef.current.scale.set(1, 1, state.currentScaleZ)
+    meshRef.current.position.set(...state.currentPosition)
+    meshRef.current.rotation.set(...state.currentRotation)
+
+    if (meshRef.current.material && "opacity" in meshRef.current.material) {
+      meshRef.current.material.opacity = state.currentOpacity
+      meshRef.current.material.transparent = state.currentOpacity < 1
+    }
+
+    // Trigger geometry update if needed
+    if (geometryNeedsUpdate) {
+      setGeometryUpdateFlag((prev) => prev + 1)
+    }
+  })
+
+  // * EVENT HANDLERS
+  const handlePointerEnter = useCallback(() => {
+    if (disabled) return
+    setIsHovered(true)
+    onHoverStart?.()
+  }, [disabled, onHoverStart])
+
+  const handlePointerLeave = useCallback(() => {
+    setIsHovered(false)
+    onHoverEnd?.()
+  }, [onHoverEnd])
+
+  const handlePointerDown = useCallback(() => {
+    if (disabled) return
+    setIsPressed(true)
+    onTapStart?.()
+  }, [disabled, onTapStart])
+
+  const handlePointerUp = useCallback(() => {
+    if (disabled) return
+    setIsPressed(false)
+    onTapEnd?.()
+
+    if (onClick) {
+      onClick()
+    }
+
+    if (onToggle) {
+      onToggle(!active)
+    }
+  }, [disabled, onTapEnd, onClick, onToggle, active])
+
+  return (
+    <mesh
+      ref={meshRef}
+      position={position}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      aria-label={ariaLabel}
+      receiveShadow
+      castShadow
+    >
+      <extrudeGeometry args={[shape, extrudeSettings]} />
+      <MeshTransmissionMaterial
+        transmission={transmission}
+        roughness={roughness}
+        ior={ior}
+        chromaticAberration={chromaticAberration}
+        thickness={thickness}
+        wireframe={wireframe}
+        color={parseColor(color)}
+        anisotropicBlur={anisotropicBlur}
+        resolution={blur}
+      />
+    </mesh>
+  )
+}
