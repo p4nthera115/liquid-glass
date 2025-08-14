@@ -1,7 +1,10 @@
-import { Canvas } from "@react-three/fiber"
+import { Canvas, extend } from "@react-three/fiber"
 import { LiquidGlass } from "./components/liquid-glass"
 import { VideoTexture, OrbitControls } from "@react-three/drei"
 import { Perf } from "r3f-perf"
+import { geometry } from "maath"
+
+extend({ RoundedPlaneGeometry: geometry.RoundedPlaneGeometry })
 
 export default function App() {
   return (
@@ -9,14 +12,16 @@ export default function App() {
       <Canvas camera={{ position: [0, 0, 2] }}>
         <Perf position="top-left" />
         <OrbitControls
-          minPolarAngle={Math.PI / 2}
-          maxPolarAngle={2.7}
-          minAzimuthAngle={0}
-          maxAzimuthAngle={0}
+
+        // * CAMERA RESTRICTIONS
+        // minPolarAngle={Math.PI / 2}
+        // maxPolarAngle={2.7}
+        // minAzimuthAngle={0}
+        // maxAzimuthAngle={0}
         />
         {/* Video */}
         <mesh position={[0, 0, -0.4]}>
-          <circleGeometry args={[0.55, 100]} />
+          <roundedPlaneGeometry args={[2, 2, 0.2]} />
           <VideoTexture src="/wave.mp4">
             {(texture) => <meshBasicMaterial map={texture} />}
           </VideoTexture>
