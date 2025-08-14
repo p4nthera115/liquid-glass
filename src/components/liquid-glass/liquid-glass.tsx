@@ -1,6 +1,6 @@
-import { MeshTransmissionMaterial } from "@react-three/drei"
-import { useMemo, useRef, useState, useEffect, useCallback } from "react"
 import * as THREE from "three"
+import { useMemo, useRef, useState, useEffect, useCallback } from "react"
+import { MeshTransmissionMaterial } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 
 import type { LiquidGlassProps, AnimationValues } from "./types"
@@ -296,6 +296,7 @@ export default function LiquidGlass(props: LiquidGlassProps) {
   // Track if geometry needs to be updated
   const [geometryUpdateFlag, setGeometryUpdateFlag] = useState(0)
 
+  // Create geometry
   const shape = useMemo(() => {
     const currentWidth = animationState.current?.currentWidth || width
     const currentHeight = animationState.current?.currentHeight || height
