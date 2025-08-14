@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #fff;
+  background: linear-gradient(to top, #999, #fff);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -17,5 +17,4 @@
   height: 100dvh;
   width: screen;
   min-height: 100dvh;
-  border: #000 solid;
 }

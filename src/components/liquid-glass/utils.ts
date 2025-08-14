@@ -8,10 +8,9 @@ export function parseColor(color: string | THREE.Color): THREE.Color {
   if (color instanceof THREE.Color) return color
   return new THREE.Color(color)
 }
-
 /**
  * Create a rounded rectangle shape for extrusion
- * Uses mathematical approach for precise corner arcs
+ * Uses mathematical approach for precise corner arcs with configurable smoothness
  */
 export function createRoundedRectangleShape(
   width: number,
@@ -23,7 +22,7 @@ export function createRoundedRectangleShape(
   const maxRadius = Math.min(width / 2, height / 2)
   const r = Math.min(radius, maxRadius)
 
-  // Helper constants (adapted from the BufferGeometry approach)
+  // Helper constants
   const wi = width / 2 - r // inner width
   const hi = height / 2 - r // inner height
   const w2 = width / 2 // half width
@@ -41,8 +40,8 @@ export function createRoundedRectangleShape(
   if (r > 0) {
     const centerX = wi
     const centerY = -hi
-    // Arc from bottom to right (270° to 360°/0°)
-    shape.absarc(centerX, centerY, r, -Math.PI / 2, 0, false)
+    // Create smooth arc manually using the smoothness parameter
+    createSmoothArc(shape, centerX, centerY, r, -Math.PI / 2, 0, smoothness)
   }
 
   // Right edge
@@ -52,8 +51,7 @@ export function createRoundedRectangleShape(
   if (r > 0) {
     const centerX = wi
     const centerY = hi
-    // Arc from right to top (0° to 90°)
-    shape.absarc(centerX, centerY, r, 0, Math.PI / 2, false)
+    createSmoothArc(shape, centerX, centerY, r, 0, Math.PI / 2, smoothness)
   }
 
   // Top edge
@@ -63,8 +61,15 @@ export function createRoundedRectangleShape(
   if (r > 0) {
     const centerX = -wi
     const centerY = hi
-    // Arc from top to left (90° to 180°)
-    shape.absarc(centerX, centerY, r, Math.PI / 2, Math.PI, false)
+    createSmoothArc(
+      shape,
+      centerX,
+      centerY,
+      r,
+      Math.PI / 2,
+      Math.PI,
+      smoothness
+    )
   }
 
   // Left edge
@@ -74,11 +79,40 @@ export function createRoundedRectangleShape(
   if (r > 0) {
     const centerX = -wi
     const centerY = -hi
-    // Arc from left to bottom (180° to 270°)
-    shape.absarc(centerX, centerY, r, Math.PI, (3 * Math.PI) / 2, false)
+    createSmoothArc(
+      shape,
+      centerX,
+      centerY,
+      r,
+      Math.PI,
+      (3 * Math.PI) / 2,
+      smoothness
+    )
   }
 
   return shape
+}
+
+/**
+ * Create a smooth arc by manually drawing line segments
+ */
+function createSmoothArc(
+  shape: THREE.Shape,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  startAngle: number,
+  endAngle: number,
+  segments: number
+) {
+  const angleStep = (endAngle - startAngle) / segments
+
+  for (let i = 1; i <= segments; i++) {
+    const angle = startAngle + angleStep * i
+    const x = centerX + radius * Math.cos(angle)
+    const y = centerY + radius * Math.sin(angle)
+    shape.lineTo(x, y)
+  }
 }
 
 /**

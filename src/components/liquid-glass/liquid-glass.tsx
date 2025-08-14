@@ -11,47 +11,49 @@ import {
   mergeAnimations,
 } from "./utils"
 
-export default function LiquidGlass({
-  width = DEFAULT_PROPS.width,
-  height = DEFAULT_PROPS.height,
-  borderRadius = DEFAULT_PROPS.borderRadius,
-  borderSmoothness = DEFAULT_PROPS.borderSmoothness,
-  position = DEFAULT_PROPS.position,
+export default function LiquidGlass(props: LiquidGlassProps) {
+  const {
+    width = DEFAULT_PROPS.width,
+    height = DEFAULT_PROPS.height,
+    borderRadius = DEFAULT_PROPS.borderRadius,
+    borderSmoothness = DEFAULT_PROPS.borderSmoothness,
+    position = DEFAULT_PROPS.position,
 
-  transmission = DEFAULT_PROPS.transmission,
-  roughness = DEFAULT_PROPS.roughness,
-  ior = DEFAULT_PROPS.ior,
-  chromaticAberration = DEFAULT_PROPS.chromaticAberration,
-  anisotropicBlur = DEFAULT_PROPS.anisotropicBlur,
-  blur = DEFAULT_PROPS.blur,
-  color = DEFAULT_PROPS.color,
-  thickness = DEFAULT_PROPS.thickness,
-  wireframe = DEFAULT_PROPS.wireframe,
+    transmission = DEFAULT_PROPS.transmission,
+    roughness = DEFAULT_PROPS.roughness,
+    ior = DEFAULT_PROPS.ior,
+    chromaticAberration = DEFAULT_PROPS.chromaticAberration,
+    anisotropicBlur = DEFAULT_PROPS.anisotropicBlur,
+    blur = DEFAULT_PROPS.blur,
+    color = DEFAULT_PROPS.color,
+    thickness = DEFAULT_PROPS.thickness,
+    wireframe = DEFAULT_PROPS.wireframe,
 
-  whileHover,
-  whileTap,
-  whileActive,
-  whileDisabled,
+    whileHover,
+    whileTap,
+    whileActive,
+    whileDisabled,
 
-  active = false,
-  disabled = false,
+    active = false,
+    disabled = false,
 
-  onClick,
-  onToggle,
-  onHoverStart,
-  onHoverEnd,
-  onTapStart,
-  onTapEnd,
+    onClick,
+    onToggle,
+    onHoverStart,
+    onHoverEnd,
+    onTapStart,
+    onTapEnd,
 
-  springStrength = DEFAULT_PROPS.springStrength,
-  damping = DEFAULT_PROPS.damping,
-  animationThreshold = DEFAULT_PROPS.animationThreshold,
+    springStrength = DEFAULT_PROPS.springStrength,
+    damping = DEFAULT_PROPS.damping,
+    animationThreshold = DEFAULT_PROPS.animationThreshold,
 
-  extrudeSettings = DEFAULT_PROPS.extrudeSettings,
+    extrudeSettings = DEFAULT_PROPS.extrudeSettings,
 
-  // tabIndex = 0,
-  "aria-label": ariaLabel,
-}: LiquidGlassProps) {
+    // tabIndex = 0,
+    "aria-label": ariaLabel,
+  } = props
+
   const meshRef = useRef<THREE.Mesh>(null)
   const [isHovered, setIsHovered] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
