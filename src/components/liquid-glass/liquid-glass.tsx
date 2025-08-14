@@ -58,6 +58,7 @@ export default function LiquidGlass(props: LiquidGlassProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
 
+  // * ANIMATIONS
   // Enhanced animation state with width/height instead of scale
   const animationState = useRef({
     // Current values
@@ -89,22 +90,6 @@ export default function LiquidGlass(props: LiquidGlassProps) {
     baseWidth: width,
     baseHeight: height,
   })
-
-  // Track if geometry needs to be updated
-  const [geometryUpdateFlag, setGeometryUpdateFlag] = useState(0)
-
-  // * GEOMETRY - Create shape for extrusion with dynamic dimensions
-  const shape = useMemo(() => {
-    const currentWidth = animationState.current?.currentWidth || width
-    const currentHeight = animationState.current?.currentHeight || height
-
-    return createRoundedRectangleShape(
-      currentWidth,
-      currentHeight,
-      borderRadius,
-      borderSmoothness
-    )
-  }, [width, height, borderRadius, borderSmoothness, geometryUpdateFlag])
 
   // Get current animation based on state with proper layering
   const getCurrentAnimation = useCallback((): AnimationValues => {
@@ -307,7 +292,23 @@ export default function LiquidGlass(props: LiquidGlassProps) {
     }
   })
 
-  // * EVENT HANDLERS
+  // * GEOMETRY
+  // Track if geometry needs to be updated
+  const [geometryUpdateFlag, setGeometryUpdateFlag] = useState(0)
+
+  const shape = useMemo(() => {
+    const currentWidth = animationState.current?.currentWidth || width
+    const currentHeight = animationState.current?.currentHeight || height
+
+    return createRoundedRectangleShape(
+      currentWidth,
+      currentHeight,
+      borderRadius,
+      borderSmoothness
+    )
+  }, [width, height, borderRadius, borderSmoothness, geometryUpdateFlag])
+
+  // * HANDLERS
   const handlePointerEnter = useCallback(() => {
     if (disabled) return
     setIsHovered(true)

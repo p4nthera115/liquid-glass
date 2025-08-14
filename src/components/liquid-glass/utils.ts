@@ -2,13 +2,6 @@ import * as THREE from "three"
 import type { AnimationValues } from "./types"
 
 /**
- * Parse color input to THREE.Color
- */
-export function parseColor(color: string | THREE.Color): THREE.Color {
-  if (color instanceof THREE.Color) return color
-  return new THREE.Color(color)
-}
-/**
  * Create a rounded rectangle shape for extrusion
  * Uses mathematical approach for precise corner arcs with configurable smoothness
  */
@@ -126,4 +119,12 @@ export function mergeAnimations(
     Object.assign(merged, animation)
   })
   return merged
+}
+
+/**
+ * Parse color input to THREE.Color
+ */
+export function parseColor(color: string | THREE.Color): THREE.Color {
+  if (color instanceof THREE.Color) return color
+  return new THREE.Color(color)
 }

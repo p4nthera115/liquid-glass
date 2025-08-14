@@ -18,3 +18,13 @@
   width: screen;
   min-height: 100dvh;
 }
+
+.arrows {
+  color: #aaa;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.arrows:hover {
+  color: #000;
+}
