@@ -1,6 +1,6 @@
 import { LiquidGlass } from "../liquid-glass"
-import { VideoTexture } from "@react-three/drei"
-import { extend } from "@react-three/fiber"
+import { OrbitControls, VideoTexture } from "@react-three/drei"
+import { Canvas, extend } from "@react-three/fiber"
 import { geometry } from "maath"
 import { Color } from "three"
 
@@ -8,7 +8,8 @@ extend({ RoundedPlaneGeometry: geometry.RoundedPlaneGeometry })
 
 export default function Arrows() {
   return (
-    <>
+    <Canvas>
+      <OrbitControls />
       {/* Video */}
       <mesh position={[0, 0, -0.4]}>
         <roundedPlaneGeometry args={[1, 1, 0.5]} />
@@ -43,6 +44,6 @@ export default function Arrows() {
           bevelSegments: 30,
         }}
       />
-    </>
+    </Canvas>
   )
 }

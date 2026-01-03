@@ -26,7 +26,11 @@ export default function HeroSection() {
         color="#ffffff"
         castShadow
       />
-      <directionalLight position={[-5, 3, -5]} intensity={0.8} color="#667eea" />
+      <directionalLight
+        position={[-5, 3, -5]}
+        intensity={0.8}
+        color="#667eea"
+      />
       <ambientLight intensity={0.6} />
 
       {/* Accent lights for glass reflections */}
@@ -72,12 +76,12 @@ export default function HeroSection() {
           borderRadius={0.2}
           borderSmoothness={12}
           position={[0, 0.2, 0]}
-          color={new THREE.Color(1.1, 1.1, 1.15)}
-          transmission={0.95}
+          // color={new THREE.Color(1.1, 1.1, 1.15)}
+          transmission={1}
           roughness={0.08}
-          ior={1.8}
+          ior={2.5}
           chromaticAberration={0.03}
-          thickness={0.5}
+          thickness={0.1}
           whileHover={{ scale: 1.05, rotateY: 0.05 }}
           whileTap={{ scale: 0.98, z: -0.1 }}
           extrudeSettings={{
@@ -91,7 +95,7 @@ export default function HeroSection() {
       </Float>
 
       {/* Floating accent panel - circle */}
-      <Float
+      {/* <Float
         speed={1.5}
         rotationIntensity={0.3}
         floatIntensity={0.3}
@@ -120,10 +124,10 @@ export default function HeroSection() {
             bevelSegments: 6,
           }}
         />
-      </Float>
+      </Float> */}
 
       {/* Floating accent panel - tall rectangle */}
-      <Float
+      {/* <Float
         speed={1.8}
         rotationIntensity={0.25}
         floatIntensity={0.4}
@@ -152,10 +156,10 @@ export default function HeroSection() {
             bevelSegments: 5,
           }}
         />
-      </Float>
+      </Float> */}
 
       {/* Small floating orb */}
-      <Float speed={3} floatIntensity={0.6}>
+      {/* <Float speed={3} floatIntensity={0.6}>
         <LiquidGlass
           width={0.18}
           height={0.18}
@@ -201,7 +205,7 @@ export default function HeroSection() {
             bevelSegments: 5,
           }}
         />
-      </Float>
+      </Float> */}
     </group>
   )
 }

@@ -1,6 +1,6 @@
 /* Landing Page Styles - Light Mode */
 
-@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap");
 
 .landing-page {
   position: relative;
@@ -8,7 +8,8 @@
   height: 100vh;
   overflow: hidden;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fc 50%, #f0f2f8 100%);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+    Roboto, sans-serif;
 }
 
 /* Canvas Container */
@@ -29,7 +30,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 2.5rem;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0.4)
+  );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -172,19 +177,31 @@
 
 /* Subtle background pattern */
 .landing-page::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: 
-    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(102, 126, 234, 0.06), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(118, 75, 162, 0.06), transparent),
-    radial-gradient(ellipse 50% 30% at 50% 80%, rgba(236, 72, 153, 0.04), transparent);
+  background: radial-gradient(
+      ellipse 80% 50% at 20% 40%,
+      rgba(102, 126, 234, 0.06),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 60%,
+      rgba(118, 75, 162, 0.06),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 50% 30% at 50% 80%,
+      rgba(236, 72, 153, 0.04),
+      transparent
+    );
   z-index: 0;
   animation: gradientShift 15s ease-in-out infinite;
 }
 
 @keyframes gradientShift {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
