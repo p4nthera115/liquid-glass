@@ -1,6 +1,6 @@
 import { Suspense, useState } from "react"
 import { Canvas } from "@react-three/fiber"
-import { PerspectiveCamera, OrbitControls } from "@react-three/drei"
+import { PerspectiveCamera, OrbitControls, Environment } from "@react-three/drei"
 import { Perf } from "r3f-perf"
 import HeroSection from "./sections/HeroSection"
 import ShowcaseSection from "./sections/ShowcaseSection"
@@ -61,6 +61,9 @@ export default function LandingPage() {
           {showPerf && <Perf position="bottom-left" />}
 
           <Suspense fallback={null}>
+            {/* Environment is required for MeshTransmissionMaterial to work */}
+            <Environment preset="apartment" background={false} />
+            
             <OrbitControls
               enablePan={false}
               minDistance={2}
