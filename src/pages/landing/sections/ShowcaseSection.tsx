@@ -1,6 +1,9 @@
 import { useState } from "react"
 import { Html, Float, MeshReflectorMaterial } from "@react-three/drei"
-import { LiquidGlass, MATERIAL_PRESETS } from "../../../components/liquid-glass"
+import {
+  LiquidGlass,
+  MATERIAL_PRESETS,
+} from "../../../components/liquid-glass"
 import * as THREE from "three"
 
 interface ShowcaseItem {
@@ -55,7 +58,7 @@ const showcaseItems: ShowcaseItem[] = [
 
 export default function ShowcaseSection() {
   const [activeItem, setActiveItem] = useState<string | null>(null)
-  const spacing = 1.4
+  const spacing = 0.85
 
   return (
     <group>
@@ -69,7 +72,7 @@ export default function ShowcaseSection() {
       <pointLight position={[3, 2, 2]} intensity={3} color="#667eea" />
       <pointLight position={[0, -1, 3]} intensity={2} color="#10b981" />
 
-      {/* Showcase panels in a row */}
+      {/* Showcase panels in a row - optimized sizes */}
       {showcaseItems.map((item, index) => {
         const xPos = (index - (showcaseItems.length - 1) / 2) * spacing
         const isActive = activeItem === item.id
@@ -83,29 +86,29 @@ export default function ShowcaseSection() {
           >
             <group position={[xPos, 0, 0]}>
               <LiquidGlass
-                width={1}
-                height={1.4}
-                borderRadius={0.2}
-                borderSmoothness={30}
+                width={0.6}
+                height={0.85}
+                borderRadius={0.12}
+                borderSmoothness={10}
                 position={[0, 0, 0]}
                 {...item.props}
-                whileHover={{ scale: 1.1, z: 0.2, rotateY: 0.1 }}
+                whileHover={{ scale: 1.1, z: 0.15, rotateY: 0.1 }}
                 whileTap={{ scale: 0.95 }}
-                whileActive={{ scale: 1.15, z: 0.3 }}
+                whileActive={{ scale: 1.15, z: 0.2 }}
                 active={isActive}
                 onClick={() => setActiveItem(isActive ? null : item.id)}
                 extrudeSettings={{
-                  depth: 0.015,
+                  depth: 0.01,
                   bevelEnabled: true,
-                  bevelThickness: 0.012,
-                  bevelSize: 0.018,
-                  bevelSegments: 12,
+                  bevelThickness: 0.008,
+                  bevelSize: 0.012,
+                  bevelSegments: 5,
                 }}
               />
 
               {/* Label */}
               <Html
-                position={[0, -1, 0]}
+                position={[0, -0.65, 0]}
                 center
                 distanceFactor={6}
                 style={{ pointerEvents: "none" }}
@@ -145,20 +148,16 @@ export default function ShowcaseSection() {
 
       {/* Background decorative elements */}
       <mesh position={[0, 0, -2]}>
-        <planeGeometry args={[10, 6]} />
-        <meshStandardMaterial
-          color="#0a0a15"
-          transparent
-          opacity={0.5}
-        />
+        <planeGeometry args={[8, 5]} />
+        <meshStandardMaterial color="#0a0a15" transparent opacity={0.5} />
       </mesh>
 
       {/* Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
-        <planeGeometry args={[20, 20]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
+        <planeGeometry args={[12, 12]} />
         <MeshReflectorMaterial
           blur={[400, 100]}
-          resolution={1024}
+          resolution={512}
           mixBlur={0.9}
           mixStrength={50}
           roughness={0.9}
@@ -171,4 +170,3 @@ export default function ShowcaseSection() {
     </group>
   )
 }
-

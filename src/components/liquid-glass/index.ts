@@ -15,4 +15,8 @@ export {
   type MaterialPreset,
 } from "./constants"
 
-export { parseColor, createRoundedRectangleShape, mergeAnimations } from "./utils"
+export {
+  parseColor,
+  createRoundedRectangleShape,
+  mergeAnimations,
+} from "./utils"

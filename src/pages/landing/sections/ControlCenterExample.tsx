@@ -1,10 +1,10 @@
 import { useState, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
-import { Html, Float, MeshReflectorMaterial } from "@react-three/drei"
+import { Html, MeshReflectorMaterial } from "@react-three/drei"
 import { LiquidGlass } from "../../../components/liquid-glass"
 import * as THREE from "three"
 
-// Control Center panel configuration
+// Control Center panel configuration - scaled down for performance
 interface ControlPanel {
   id: string
   icon: string
@@ -15,13 +15,16 @@ interface ControlPanel {
   active?: boolean
 }
 
+// Scale factor to reduce overall size
+const SCALE = 0.55
+
 const controlPanels: ControlPanel[] = [
   {
     id: "wifi",
     icon: "📶",
     label: "Wi-Fi",
-    position: [-1.3, 1.1, 0],
-    size: [0.55, 0.55],
+    position: [-0.72 * SCALE, 0.6 * SCALE, 0],
+    size: [0.55 * SCALE, 0.55 * SCALE],
     color: new THREE.Color(0.3, 0.5, 1),
     active: true,
   },
@@ -29,8 +32,8 @@ const controlPanels: ControlPanel[] = [
     id: "bluetooth",
     icon: "🔵",
     label: "Bluetooth",
-    position: [-0.65, 1.1, 0],
-    size: [0.55, 0.55],
+    position: [-0.36 * SCALE, 0.6 * SCALE, 0],
+    size: [0.55 * SCALE, 0.55 * SCALE],
     color: new THREE.Color(0.3, 0.5, 1),
     active: true,
   },
@@ -38,16 +41,16 @@ const controlPanels: ControlPanel[] = [
     id: "airplane",
     icon: "✈️",
     label: "Airplane",
-    position: [-1.3, 0.45, 0],
-    size: [0.55, 0.55],
+    position: [-0.72 * SCALE, 0.24 * SCALE, 0],
+    size: [0.55 * SCALE, 0.55 * SCALE],
     color: new THREE.Color(1, 1, 1),
   },
   {
     id: "cellular",
     icon: "📱",
     label: "Cellular",
-    position: [-0.65, 0.45, 0],
-    size: [0.55, 0.55],
+    position: [-0.36 * SCALE, 0.24 * SCALE, 0],
+    size: [0.55 * SCALE, 0.55 * SCALE],
     color: new THREE.Color(0.2, 0.8, 0.4),
     active: true,
   },
@@ -55,56 +58,56 @@ const controlPanels: ControlPanel[] = [
     id: "music",
     icon: "🎵",
     label: "Now Playing",
-    position: [0.4, 0.775, 0],
-    size: [1.25, 1.2],
+    position: [0.22 * SCALE, 0.42 * SCALE, 0],
+    size: [0.75 * SCALE, 0.72 * SCALE],
     color: new THREE.Color(1, 0.4, 0.6),
   },
   {
     id: "brightness",
     icon: "☀️",
     label: "Brightness",
-    position: [-1.3, -0.45, 0],
-    size: [0.55, 1.2],
+    position: [-0.72 * SCALE, -0.25 * SCALE, 0],
+    size: [0.55 * SCALE, 0.72 * SCALE],
     color: new THREE.Color(1.2, 1.2, 0.8),
   },
   {
     id: "volume",
     icon: "🔊",
     label: "Volume",
-    position: [-0.65, -0.45, 0],
-    size: [0.55, 1.2],
+    position: [-0.36 * SCALE, -0.25 * SCALE, 0],
+    size: [0.55 * SCALE, 0.72 * SCALE],
     color: new THREE.Color(0.8, 0.8, 1.2),
   },
   {
     id: "flashlight",
     icon: "🔦",
     label: "Flashlight",
-    position: [0.125, -0.45, 0],
-    size: [0.55, 0.55],
+    position: [0.07 * SCALE, -0.25 * SCALE, 0],
+    size: [0.55 * SCALE, 0.55 * SCALE],
     color: new THREE.Color(0.3, 0.5, 1),
   },
   {
     id: "timer",
     icon: "⏱️",
     label: "Timer",
-    position: [0.725, -0.45, 0],
-    size: [0.55, 0.55],
+    position: [0.4 * SCALE, -0.25 * SCALE, 0],
+    size: [0.55 * SCALE, 0.55 * SCALE],
     color: new THREE.Color(1, 0.6, 0.2),
   },
   {
     id: "calculator",
     icon: "🧮",
     label: "Calculator",
-    position: [0.125, -1.1, 0],
-    size: [0.55, 0.55],
+    position: [0.07 * SCALE, -0.61 * SCALE, 0],
+    size: [0.55 * SCALE, 0.55 * SCALE],
     color: new THREE.Color(0.5, 0.5, 0.5),
   },
   {
     id: "camera",
     icon: "📷",
     label: "Camera",
-    position: [0.725, -1.1, 0],
-    size: [0.55, 0.55],
+    position: [0.4 * SCALE, -0.61 * SCALE, 0],
+    size: [0.55 * SCALE, 0.55 * SCALE],
     color: new THREE.Color(0.6, 0.6, 0.6),
   },
 ]
@@ -127,42 +130,38 @@ function ControlPanelItem({
         width={width}
         height={height}
         borderRadius={borderRadius}
-        borderSmoothness={40}
+        borderSmoothness={8}
         position={[0, 0, 0]}
-        color={
-          isActive
-            ? panel.color
-            : new THREE.Color(0.5, 0.5, 0.55)
-        }
+        color={isActive ? panel.color : new THREE.Color(0.5, 0.5, 0.55)}
         transmission={isActive ? 0.85 : 0.95}
         roughness={isActive ? 0.05 : 0.12}
         ior={isActive ? 2.2 : 1.8}
         chromaticAberration={isActive ? 0.02 : 0}
         thickness={isActive ? 0.6 : 0.3}
-        whileHover={{ scale: 1.08, z: 0.08 }}
+        whileHover={{ scale: 1.08, z: 0.05 }}
         whileTap={{ scale: 0.95 }}
         whileActive={{ scale: 1.05 }}
         active={isActive}
         onClick={onToggle}
         extrudeSettings={{
-          depth: 0.01,
+          depth: 0.006,
           bevelEnabled: true,
-          bevelThickness: 0.008,
-          bevelSize: 0.012,
-          bevelSegments: 10,
+          bevelThickness: 0.005,
+          bevelSize: 0.008,
+          bevelSegments: 4,
         }}
       />
 
       {/* Icon */}
       <Html
-        position={[0, height > 0.8 ? 0.15 : 0, 0.05]}
+        position={[0, height > 0.25 ? 0.06 : 0, 0.03]}
         center
         distanceFactor={5}
         style={{ pointerEvents: "none" }}
       >
         <div
           style={{
-            fontSize: height > 0.8 ? "28px" : "20px",
+            fontSize: height > 0.25 ? "18px" : "14px",
             filter: isActive ? "none" : "grayscale(0.5)",
             opacity: isActive ? 1 : 0.7,
           }}
@@ -172,16 +171,16 @@ function ControlPanelItem({
       </Html>
 
       {/* Label for larger panels */}
-      {height > 0.8 && (
+      {height > 0.25 && (
         <Html
-          position={[0, -height / 2 + 0.15, 0.05]}
+          position={[0, -height / 2 + 0.05, 0.03]}
           center
           distanceFactor={5}
           style={{ pointerEvents: "none" }}
         >
           <div
             style={{
-              fontSize: "10px",
+              fontSize: "8px",
               fontWeight: 500,
               color: isActive ? "white" : "rgba(255,255,255,0.6)",
               fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
@@ -199,7 +198,7 @@ function ControlPanelItem({
 function MusicPlayerContent({ isActive }: { isActive: boolean }) {
   return (
     <Html
-      position={[0, 0, 0.06]}
+      position={[0, 0, 0.04]}
       center
       distanceFactor={4}
       style={{ pointerEvents: "none" }}
@@ -209,42 +208,43 @@ function MusicPlayerContent({ isActive }: { isActive: boolean }) {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: "8px",
+          gap: "4px",
           fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
           color: "white",
           opacity: isActive ? 1 : 0.7,
+          transform: "scale(0.7)",
         }}
       >
         <div
           style={{
-            width: "50px",
-            height: "50px",
-            borderRadius: "8px",
+            width: "32px",
+            height: "32px",
+            borderRadius: "6px",
             background: "linear-gradient(135deg, #667eea, #764ba2)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "24px",
-            boxShadow: "0 4px 15px rgba(102, 126, 234, 0.4)",
+            fontSize: "16px",
+            boxShadow: "0 2px 8px rgba(102, 126, 234, 0.4)",
           }}
         >
           🎵
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "11px", fontWeight: 600 }}>Blinding Lights</div>
-          <div style={{ fontSize: "9px", opacity: 0.7 }}>The Weeknd</div>
+          <div style={{ fontSize: "9px", fontWeight: 600 }}>Blinding Lights</div>
+          <div style={{ fontSize: "7px", opacity: 0.7 }}>The Weeknd</div>
         </div>
         <div
           style={{
             display: "flex",
-            gap: "16px",
-            fontSize: "14px",
-            marginTop: "4px",
+            gap: "10px",
+            fontSize: "10px",
+            marginTop: "2px",
           }}
         >
-          <span style={{ cursor: "pointer" }}>⏮️</span>
-          <span style={{ cursor: "pointer" }}>▶️</span>
-          <span style={{ cursor: "pointer" }}>⏭️</span>
+          <span>⏮️</span>
+          <span>▶️</span>
+          <span>⏭️</span>
         </div>
       </div>
     </Html>
@@ -275,7 +275,7 @@ export default function ControlCenterExample() {
       groupRef.current.rotation.y =
         Math.sin(state.clock.elapsedTime * 0.5) * 0.08
       groupRef.current.position.y =
-        Math.sin(state.clock.elapsedTime * 0.8) * 0.05
+        Math.sin(state.clock.elapsedTime * 0.8) * 0.03
     }
   })
 
@@ -291,13 +291,13 @@ export default function ControlCenterExample() {
       <pointLight position={[2, 1, 3]} intensity={2} color="#ec4899" />
       <pointLight position={[0, -2, 2]} intensity={1.5} color="#10b981" />
 
-      {/* Main Control Center background panel */}
+      {/* Main Control Center background panel - optimized */}
       <LiquidGlass
-        width={2.8}
-        height={3.2}
-        borderRadius={0.35}
-        borderSmoothness={30}
-        position={[-0.1, 0, -0.15]}
+        width={1.6 * SCALE}
+        height={1.85 * SCALE}
+        borderRadius={0.2 * SCALE}
+        borderSmoothness={10}
+        position={[-0.06 * SCALE, 0, -0.1]}
         color={new THREE.Color(0.3, 0.3, 0.35)}
         transmission={0.75}
         roughness={0.2}
@@ -306,11 +306,11 @@ export default function ControlCenterExample() {
         thickness={0.2}
         anisotropicBlur={0.3}
         extrudeSettings={{
-          depth: 0.05,
+          depth: 0.03,
           bevelEnabled: true,
-          bevelThickness: 0.02,
-          bevelSize: 0.025,
-          bevelSegments: 15,
+          bevelThickness: 0.012,
+          bevelSize: 0.015,
+          bevelSegments: 5,
         }}
       />
 
@@ -325,17 +325,17 @@ export default function ControlCenterExample() {
       ))}
 
       {/* Music player content overlay */}
-      <group position={[0.4, 0.775, 0]}>
+      <group position={[0.22 * SCALE, 0.42 * SCALE, 0]}>
         <MusicPlayerContent isActive={activePanels.has("music")} />
       </group>
 
       {/* Time display at top */}
-      <Html position={[-0.1, 1.75, 0.1]} center distanceFactor={4}>
+      <Html position={[-0.06 * SCALE, 1 * SCALE, 0.06]} center distanceFactor={4}>
         <div
           style={{
             color: "white",
             fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-            fontSize: "14px",
+            fontSize: "12px",
             fontWeight: 600,
             opacity: 0.9,
             textShadow: "0 2px 10px rgba(0,0,0,0.3)",
@@ -349,11 +349,15 @@ export default function ControlCenterExample() {
       </Html>
 
       {/* Reflective floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.2, 0]} receiveShadow>
-        <planeGeometry args={[20, 20]} />
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -1.2, 0]}
+        receiveShadow
+      >
+        <planeGeometry args={[12, 12]} />
         <MeshReflectorMaterial
           blur={[400, 100]}
-          resolution={1024}
+          resolution={512}
           mixBlur={0.85}
           mixStrength={60}
           roughness={0.85}
@@ -365,11 +369,10 @@ export default function ControlCenterExample() {
       </mesh>
 
       {/* Background gradient plane */}
-      <mesh position={[0, 0, -3]}>
-        <planeGeometry args={[15, 10]} />
+      <mesh position={[0, 0, -2]}>
+        <planeGeometry args={[10, 7]} />
         <meshBasicMaterial color="#050510" transparent opacity={0.8} />
       </mesh>
     </group>
   )
 }
-

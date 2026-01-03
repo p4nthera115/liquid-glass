@@ -9,7 +9,7 @@ export const DEFAULT_PROPS = {
   width: 1,
   height: 1,
   borderRadius: 0.2,
-  borderSmoothness: 30,
+  borderSmoothness: 12, // Low value for performance - increase for larger panels
 
   // Transform
   position: DEFAULT_POSITION,
@@ -35,13 +35,13 @@ export const DEFAULT_PROPS = {
   damping: 0.8,
   animationThreshold: 0.001,
 
-  // Extrude settings - optimized bevelSegments for performance
+  // Extrude settings - optimized for performance (<150k triangles)
   extrudeSettings: {
     depth: 0,
     bevelEnabled: true,
     bevelThickness: 0.02,
     bevelSize: 0.03,
-    bevelSegments: 32, // Reduced from 50 for better performance while maintaining quality
+    bevelSegments: 8, // Low value for performance - increase for larger panels
   } as ExtrudeSettings,
 }
 

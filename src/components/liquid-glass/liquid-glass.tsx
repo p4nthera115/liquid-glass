@@ -13,7 +13,11 @@ import { useFrame } from "@react-three/fiber"
 
 import type { LiquidGlassProps, AnimationValues, AnimationState } from "./types"
 import { DEFAULT_PROPS, DEFAULT_ANIMATIONS } from "./constants"
-import { parseColor, createRoundedRectangleShape, mergeAnimations } from "./utils"
+import {
+  parseColor,
+  createRoundedRectangleShape,
+  mergeAnimations,
+} from "./utils"
 
 /**
  * LiquidGlass - A performant, animated glass-effect 3D component
@@ -156,7 +160,10 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     }
 
     if (isPressed) {
-      return mergeAnimations(baseAnimation, whileTap || DEFAULT_ANIMATIONS.whileTap)
+      return mergeAnimations(
+        baseAnimation,
+        whileTap || DEFAULT_ANIMATIONS.whileTap
+      )
     }
 
     if (isHovered) {
@@ -335,7 +342,8 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
 
     // Update material opacity if needed
     if (meshRef.current.material && "opacity" in meshRef.current.material) {
-      ;(meshRef.current.material as THREE.Material).opacity = state.currentOpacity
+      ;(meshRef.current.material as THREE.Material).opacity =
+        state.currentOpacity
       ;(meshRef.current.material as THREE.Material).transparent =
         state.currentOpacity < 1
     }
@@ -343,7 +351,12 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
 
   // Create geometry - only when base dimensions change (not during animation)
   const shape = useMemo(() => {
-    return createRoundedRectangleShape(width, height, borderRadius, borderSmoothness)
+    return createRoundedRectangleShape(
+      width,
+      height,
+      borderRadius,
+      borderSmoothness
+    )
   }, [width, height, borderRadius, borderSmoothness])
 
   // Merged extrude settings

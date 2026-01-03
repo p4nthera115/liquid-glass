@@ -1,6 +1,6 @@
 import { Suspense, useState } from "react"
 import { Canvas } from "@react-three/fiber"
-import { Environment, PerspectiveCamera, OrbitControls } from "@react-three/drei"
+import { PerspectiveCamera, OrbitControls } from "@react-three/drei"
 import { Perf } from "r3f-perf"
 import HeroSection from "./sections/HeroSection"
 import ShowcaseSection from "./sections/ShowcaseSection"
@@ -29,13 +29,17 @@ export default function LandingPage() {
             Overview
           </button>
           <button
-            className={`nav-link ${activeSection === "showcase" ? "active" : ""}`}
+            className={`nav-link ${
+              activeSection === "showcase" ? "active" : ""
+            }`}
             onClick={() => setActiveSection("showcase")}
           >
             Showcase
           </button>
           <button
-            className={`nav-link ${activeSection === "control-center" ? "active" : ""}`}
+            className={`nav-link ${
+              activeSection === "control-center" ? "active" : ""
+            }`}
             onClick={() => setActiveSection("control-center")}
           >
             Control Center
@@ -54,10 +58,9 @@ export default function LandingPage() {
       <div className="landing-canvas">
         <Canvas gl={{ antialias: true, alpha: true }}>
           <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={50} />
-          {showPerf && <Perf position="top-left" />}
+          {showPerf && <Perf position="bottom-left" />}
 
           <Suspense fallback={null}>
-            <Environment preset="city" />
             <OrbitControls
               enablePan={false}
               minDistance={2}
@@ -79,8 +82,8 @@ export default function LandingPage() {
           <>
             <h1 className="section-title">Liquid Glass</h1>
             <p className="section-subtitle">
-              A React Three Fiber component for creating Apple-style liquid glass
-              effects in 3D
+              A React Three Fiber component for creating Apple-style liquid
+              glass effects in 3D
             </p>
             <div className="feature-list">
               <span className="feature">✓ Spring Animations</span>
@@ -102,7 +105,8 @@ export default function LandingPage() {
           <>
             <h2 className="section-title">Control Center</h2>
             <p className="section-subtitle">
-              A creative real-world example inspired by Apple's Control Center in 3D
+              A creative real-world example inspired by Apple's Control Center
+              in 3D
             </p>
           </>
         )}
@@ -117,4 +121,3 @@ export default function LandingPage() {
     </div>
   )
 }
-
