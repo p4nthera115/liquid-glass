@@ -5,33 +5,7 @@ import { Perf } from "r3f-perf"
 import HeroSection from "./sections/HeroSection"
 import ShowcaseSection from "./sections/ShowcaseSection"
 import ControlCenterExample from "./sections/ControlCenterExample"
-import GradientShader from "./components/GradientShader"
 import "./landing.css"
-
-// Color themes for different sections
-const shaderThemes = {
-  hero: {
-    color1: "#f8fafc",
-    color2: "#e0e7ff",
-    color3: "#c7d2fe",
-    color4: "#ddd6fe",
-    color5: "#fbcfe8",
-  },
-  showcase: {
-    color1: "#faf5ff",
-    color2: "#f3e8ff",
-    color3: "#e9d5ff",
-    color4: "#d8b4fe",
-    color5: "#c4b5fd",
-  },
-  "control-center": {
-    color1: "#0f172a",
-    color2: "#1e1b4b",
-    color3: "#312e81",
-    color4: "#3730a3",
-    color5: "#4338ca",
-  },
-}
 
 export default function LandingPage() {
   const [showPerf, setShowPerf] = useState(false)
@@ -39,10 +13,8 @@ export default function LandingPage() {
     "hero" | "showcase" | "control-center"
   >("hero")
 
-  const isDarkTheme = activeSection === "control-center"
-
   return (
-    <div className={`landing-page ${isDarkTheme ? "dark" : "light"}`}>
+    <div className="landing-page">
       {/* Navigation */}
       <nav className="landing-nav">
         <div className="nav-brand">
@@ -85,11 +57,10 @@ export default function LandingPage() {
       {/* 3D Canvas */}
       <div className="landing-canvas">
         <Canvas gl={{ antialias: true, alpha: true }}>
-          <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={50} />
-          {showPerf && <Perf position="bottom-left" />}
+          <color attach="background" args={["fff"]} />
 
-          {/* Animated Gradient Background Shader */}
-          <GradientShader colors={shaderThemes[activeSection]} />
+          <PerspectiveCamera makeDefault position={[0, 0, 2.7]} fov={50} />
+          {showPerf && <Perf position="bottom-left" />}
 
           <Suspense fallback={null}>
             <OrbitControls
@@ -107,7 +78,7 @@ export default function LandingPage() {
         </Canvas>
       </div>
 
-      {/* Section Info Overlay */}
+      {/* Section Info Overlay - simplified, titles now in 3D */}
       <div className="section-info">
         {activeSection === "hero" && (
           <>
