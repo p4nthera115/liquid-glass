@@ -1,24 +1,10 @@
-import { useRef } from "react"
-import { useFrame } from "@react-three/fiber"
-import { Float, Text3D, Center } from "@react-three/drei"
+import { Float, Text } from "@react-three/drei"
 import { LiquidGlass } from "../../../components/liquid-glass"
 import * as THREE from "three"
 
 export default function HeroSection() {
-  const groupRef = useRef<THREE.Group>(null)
-
-  // Subtle rotation animation
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y =
-        Math.sin(state.clock.elapsedTime * 0.3) * 0.1
-      groupRef.current.rotation.x =
-        Math.sin(state.clock.elapsedTime * 0.2) * 0.05
-    }
-  })
-
   return (
-    <group ref={groupRef}>
+    <group>
       {/* Lighting for light mode */}
       <directionalLight
         position={[5, 5, 5]}
@@ -37,31 +23,14 @@ export default function HeroSection() {
       <pointLight position={[2, 2, 3]} intensity={1.5} color="#ec4899" />
       <pointLight position={[-2, -1, 2]} intensity={1} color="#667eea" />
 
-      {/* 3D Text behind the glass */}
-      <Center position={[0, 0.15, -0.8]}>
-        <Text3D
-          font="/fonts/Inter_Bold.json"
-          size={0.5}
-          height={0.1}
-          curveSegments={4}
-          bevelEnabled={false}
-        >
-          Liquid
-          <meshStandardMaterial color="#1a1a2e" />
-        </Text3D>
-      </Center>
-      <Center position={[0, -0.4, -0.8]}>
-        <Text3D
-          font="/fonts/Inter_Bold.json"
-          size={0.5}
-          height={0.1}
-          curveSegments={4}
-          bevelEnabled={false}
-        >
-          Glass
-          <meshStandardMaterial color="#667eea" />
-        </Text3D>
-      </Center>
+      <Text fontSize={1} position={[0, 0.4, -0.8]}>
+        Liquid
+        <meshStandardMaterial color="#1a1a2e" />
+      </Text>
+      <Text fontSize={1} position={[0, -0.4, -0.8]}>
+        Glass
+        <meshStandardMaterial color="#667eea" />
+      </Text>
 
       {/* Central hero glass panel - optimized */}
       <Float
@@ -71,44 +40,44 @@ export default function HeroSection() {
         floatingRange={[-0.1, 0.1]}
       >
         <LiquidGlass
-          width={1.4}
+          width={1}
           height={1}
           borderRadius={0.2}
           borderSmoothness={12}
           position={[0, 0.2, 0]}
           // color={new THREE.Color(1.1, 1.1, 1.15)}
           transmission={1}
-          roughness={0.08}
-          ior={2.5}
+          roughness={0}
+          ior={2}
           chromaticAberration={0.03}
-          thickness={0.1}
+          thickness={0.3}
           whileHover={{ scale: 1.05, rotateY: 0.05 }}
           whileTap={{ scale: 0.98, z: -0.1 }}
           extrudeSettings={{
-            depth: 0.02,
+            depth: 0.01,
             bevelEnabled: true,
             bevelThickness: 0.015,
-            bevelSize: 0.02,
-            bevelSegments: 6,
+            bevelSize: 0.03,
+            bevelSegments: 20,
           }}
         />
       </Float>
 
       {/* Floating accent panel - circle */}
-      {/* <Float
+      <Float
         speed={1.5}
         rotationIntensity={0.3}
         floatIntensity={0.3}
         floatingRange={[-0.05, 0.05]}
       >
         <LiquidGlass
+          rotation={[-0.2, -0.5, 0]}
           width={0.45}
           height={0.45}
           borderRadius={0.5}
           borderSmoothness={16}
           position={[-1.2, 0.5, -0.3]}
-          rotation={[0, 0.3, 0]}
-          color={new THREE.Color(1.3, 1.1, 1.5)}
+          color={new THREE.Color(2, 1.1, 3)}
           transmission={0.92}
           roughness={0.05}
           ior={2.2}
@@ -124,22 +93,22 @@ export default function HeroSection() {
             bevelSegments: 6,
           }}
         />
-      </Float> */}
+      </Float>
 
       {/* Floating accent panel - tall rectangle */}
-      {/* <Float
+      <Float
         speed={1.8}
         rotationIntensity={0.25}
         floatIntensity={0.4}
         floatingRange={[-0.08, 0.08]}
       >
         <LiquidGlass
+          rotation={[0.2, 0.5, 0]}
           width={0.35}
           height={0.7}
           borderRadius={0.15}
           borderSmoothness={10}
-          position={[1.3, -0.2, -0.2]}
-          rotation={[0, -0.2, 0.1]}
+          position={[1, -0.2, -0.2]}
           color={new THREE.Color(1.1, 1.3, 1.2)}
           transmission={0.9}
           roughness={0.1}
@@ -156,39 +125,41 @@ export default function HeroSection() {
             bevelSegments: 5,
           }}
         />
-      </Float> */}
+      </Float>
 
       {/* Small floating orb */}
-      {/* <Float speed={3} floatIntensity={0.6}>
+      <Float speed={3} floatIntensity={0.6}>
         <LiquidGlass
+          rotation={[0.2, -0.5, 0]}
           width={0.18}
           height={0.18}
           borderRadius={0.5}
-          borderSmoothness={12}
+          borderSmoothness={20}
           position={[-0.9, -0.5, 0.3]}
           color={new THREE.Color(1.5, 1.2, 1.8)}
           transmission={1}
           roughness={0}
           ior={2.5}
           chromaticAberration={0.15}
-          thickness={0.8}
+          thickness={0.2}
           whileHover={{ scale: 1.3 }}
           extrudeSettings={{
             depth: 0.005,
             bevelEnabled: true,
-            bevelThickness: 0.02,
+            bevelThickness: 0.01,
             bevelSize: 0.03,
-            bevelSegments: 5,
+            bevelSegments: 20,
           }}
         />
       </Float>
 
       <Float speed={2.5} floatIntensity={0.5}>
         <LiquidGlass
+          rotation={[-0.4, 0.5, 0]}
           width={0.15}
           height={0.15}
           borderRadius={0.5}
-          borderSmoothness={12}
+          borderSmoothness={20}
           position={[1.1, 0.7, 0.2]}
           color={new THREE.Color(1.2, 1.6, 1.3)}
           transmission={1}
@@ -200,12 +171,12 @@ export default function HeroSection() {
           extrudeSettings={{
             depth: 0.005,
             bevelEnabled: true,
-            bevelThickness: 0.02,
-            bevelSize: 0.03,
-            bevelSegments: 5,
+            bevelThickness: 0.01,
+            bevelSize: 0.01,
+            bevelSegments: 20,
           }}
         />
-      </Float> */}
+      </Float>
     </group>
   )
 }

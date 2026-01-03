@@ -1,11 +1,37 @@
 import { Suspense, useState } from "react"
 import { Canvas } from "@react-three/fiber"
-import { PerspectiveCamera, OrbitControls, Environment } from "@react-three/drei"
+import { PerspectiveCamera, OrbitControls } from "@react-three/drei"
 import { Perf } from "r3f-perf"
 import HeroSection from "./sections/HeroSection"
 import ShowcaseSection from "./sections/ShowcaseSection"
 import ControlCenterExample from "./sections/ControlCenterExample"
+import GradientShader from "./components/GradientShader"
 import "./landing.css"
+
+// Color themes for different sections
+const shaderThemes = {
+  hero: {
+    color1: "#f8fafc",
+    color2: "#e0e7ff",
+    color3: "#c7d2fe",
+    color4: "#ddd6fe",
+    color5: "#fbcfe8",
+  },
+  showcase: {
+    color1: "#faf5ff",
+    color2: "#f3e8ff",
+    color3: "#e9d5ff",
+    color4: "#d8b4fe",
+    color5: "#c4b5fd",
+  },
+  "control-center": {
+    color1: "#0f172a",
+    color2: "#1e1b4b",
+    color3: "#312e81",
+    color4: "#3730a3",
+    color5: "#4338ca",
+  },
+}
 
 export default function LandingPage() {
   const [showPerf, setShowPerf] = useState(false)
@@ -13,8 +39,10 @@ export default function LandingPage() {
     "hero" | "showcase" | "control-center"
   >("hero")
 
+  const isDarkTheme = activeSection === "control-center"
+
   return (
-    <div className="landing-page">
+    <div className={`landing-page ${isDarkTheme ? "dark" : "light"}`}>
       {/* Navigation */}
       <nav className="landing-nav">
         <div className="nav-brand">
@@ -60,10 +88,10 @@ export default function LandingPage() {
           <PerspectiveCamera makeDefault position={[0, 0, 5]} fov={50} />
           {showPerf && <Perf position="bottom-left" />}
 
+          {/* Animated Gradient Background Shader */}
+          <GradientShader colors={shaderThemes[activeSection]} />
+
           <Suspense fallback={null}>
-            {/* Environment is required for MeshTransmissionMaterial to work */}
-            <Environment preset="apartment" background={false} />
-            
             <OrbitControls
               enablePan={false}
               minDistance={2}
@@ -79,7 +107,7 @@ export default function LandingPage() {
         </Canvas>
       </div>
 
-      {/* Section Info Overlay - simplified, titles now in 3D */}
+      {/* Section Info Overlay */}
       <div className="section-info">
         {activeSection === "hero" && (
           <>
