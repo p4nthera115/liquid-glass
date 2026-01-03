@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Html, Float, MeshReflectorMaterial } from "@react-three/drei"
+import { Html, Float, Text3D, Center } from "@react-three/drei"
 import {
   LiquidGlass,
   MATERIAL_PRESETS,
@@ -20,7 +20,7 @@ const showcaseItems: ShowcaseItem[] = [
     description: "Subtle blur with soft diffusion",
     props: {
       ...MATERIAL_PRESETS.frosted,
-      color: new THREE.Color(1.3, 1.3, 1.4),
+      color: new THREE.Color(1.2, 1.2, 1.3),
     },
   },
   {
@@ -29,7 +29,7 @@ const showcaseItems: ShowcaseItem[] = [
     description: "Clear glass with high refraction",
     props: {
       ...MATERIAL_PRESETS.crystal,
-      color: new THREE.Color(1.5, 1.5, 1.5),
+      color: new THREE.Color(1.3, 1.3, 1.3),
     },
   },
   {
@@ -38,7 +38,7 @@ const showcaseItems: ShowcaseItem[] = [
     description: "Liquid droplet effect",
     props: {
       ...MATERIAL_PRESETS.water,
-      color: new THREE.Color(1.2, 1.4, 1.6),
+      color: new THREE.Color(1.1, 1.3, 1.5),
     },
   },
   {
@@ -51,7 +51,7 @@ const showcaseItems: ShowcaseItem[] = [
       ior: 3,
       chromaticAberration: 0.2,
       thickness: 1.2,
-      color: new THREE.Color(1.8, 1.8, 1.8),
+      color: new THREE.Color(1.5, 1.5, 1.5),
     },
   },
 ]
@@ -62,15 +62,29 @@ export default function ShowcaseSection() {
 
   return (
     <group>
-      {/* Lighting */}
-      <directionalLight position={[5, 8, 5]} intensity={2.5} color="#fff" />
-      <directionalLight position={[-3, 4, -3]} intensity={1} color="#667eea" />
-      <ambientLight intensity={0.4} />
+      {/* Lighting for light mode */}
+      <directionalLight position={[5, 8, 5]} intensity={2} color="#fff" />
+      <directionalLight position={[-3, 4, -3]} intensity={0.8} color="#667eea" />
+      <ambientLight intensity={0.6} />
 
       {/* Colored accent lights */}
-      <pointLight position={[-3, 2, 2]} intensity={3} color="#ec4899" />
-      <pointLight position={[3, 2, 2]} intensity={3} color="#667eea" />
-      <pointLight position={[0, -1, 3]} intensity={2} color="#10b981" />
+      <pointLight position={[-3, 2, 2]} intensity={2} color="#ec4899" />
+      <pointLight position={[3, 2, 2]} intensity={2} color="#667eea" />
+      <pointLight position={[0, -1, 3]} intensity={1.5} color="#10b981" />
+
+      {/* 3D Text behind the glass */}
+      <Center position={[0, 0, -1.2]}>
+        <Text3D
+          font="/fonts/Inter_Bold.json"
+          size={0.35}
+          height={0.08}
+          curveSegments={4}
+          bevelEnabled={false}
+        >
+          Showcase
+          <meshStandardMaterial color="#1a1a2e" />
+        </Text3D>
+      </Center>
 
       {/* Showcase panels in a row - optimized sizes */}
       {showcaseItems.map((item, index) => {
@@ -116,7 +130,7 @@ export default function ShowcaseSection() {
                 <div
                   style={{
                     textAlign: "center",
-                    color: "white",
+                    color: "#1a1a2e",
                     fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
                   }}
                 >
@@ -133,7 +147,7 @@ export default function ShowcaseSection() {
                   <div
                     style={{
                       fontSize: "10px",
-                      opacity: 0.6,
+                      opacity: 0.5,
                       maxWidth: "100px",
                     }}
                   >
@@ -145,28 +159,6 @@ export default function ShowcaseSection() {
           </Float>
         )
       })}
-
-      {/* Background decorative elements */}
-      <mesh position={[0, 0, -2]}>
-        <planeGeometry args={[8, 5]} />
-        <meshStandardMaterial color="#0a0a15" transparent opacity={0.5} />
-      </mesh>
-
-      {/* Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
-        <planeGeometry args={[12, 12]} />
-        <MeshReflectorMaterial
-          blur={[400, 100]}
-          resolution={512}
-          mixBlur={0.9}
-          mixStrength={50}
-          roughness={0.9}
-          depthScale={1}
-          color="#080815"
-          metalness={0.4}
-          mirror={0.4}
-        />
-      </mesh>
     </group>
   )
 }

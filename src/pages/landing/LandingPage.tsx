@@ -76,11 +76,10 @@ export default function LandingPage() {
         </Canvas>
       </div>
 
-      {/* Section Info Overlay */}
+      {/* Section Info Overlay - simplified, titles now in 3D */}
       <div className="section-info">
         {activeSection === "hero" && (
           <>
-            <h1 className="section-title">Liquid Glass</h1>
             <p className="section-subtitle">
               A React Three Fiber component for creating Apple-style liquid
               glass effects in 3D
@@ -94,21 +93,15 @@ export default function LandingPage() {
           </>
         )}
         {activeSection === "showcase" && (
-          <>
-            <h2 className="section-title">Interactive Showcase</h2>
-            <p className="section-subtitle">
-              Hover and click the glass panels to see spring-based animations
-            </p>
-          </>
+          <p className="section-subtitle">
+            Hover and click the glass panels to see spring-based animations
+          </p>
         )}
         {activeSection === "control-center" && (
-          <>
-            <h2 className="section-title">Control Center</h2>
-            <p className="section-subtitle">
-              A creative real-world example inspired by Apple's Control Center
-              in 3D
-            </p>
-          </>
+          <p className="section-subtitle">
+            A creative real-world example inspired by Apple's Control Center in
+            3D
+          </p>
         )}
       </div>
 

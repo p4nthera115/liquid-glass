@@ -1,6 +1,6 @@
 import { useRef } from "react"
 import { useFrame } from "@react-three/fiber"
-import { Float, MeshReflectorMaterial } from "@react-three/drei"
+import { Float, Text3D, Center } from "@react-three/drei"
 import { LiquidGlass } from "../../../components/liquid-glass"
 import * as THREE from "three"
 
@@ -19,19 +19,45 @@ export default function HeroSection() {
 
   return (
     <group ref={groupRef}>
-      {/* Main directional light */}
+      {/* Lighting for light mode */}
       <directionalLight
         position={[5, 5, 5]}
-        intensity={2}
+        intensity={1.5}
         color="#ffffff"
         castShadow
       />
-      <directionalLight position={[-5, 3, -5]} intensity={1} color="#667eea" />
-      <ambientLight intensity={0.3} />
+      <directionalLight position={[-5, 3, -5]} intensity={0.8} color="#667eea" />
+      <ambientLight intensity={0.6} />
 
       {/* Accent lights for glass reflections */}
-      <pointLight position={[2, 2, 3]} intensity={2} color="#ec4899" />
-      <pointLight position={[-2, -1, 2]} intensity={1.5} color="#667eea" />
+      <pointLight position={[2, 2, 3]} intensity={1.5} color="#ec4899" />
+      <pointLight position={[-2, -1, 2]} intensity={1} color="#667eea" />
+
+      {/* 3D Text behind the glass */}
+      <Center position={[0, 0.15, -0.8]}>
+        <Text3D
+          font="/fonts/Inter_Bold.json"
+          size={0.5}
+          height={0.1}
+          curveSegments={4}
+          bevelEnabled={false}
+        >
+          Liquid
+          <meshStandardMaterial color="#1a1a2e" />
+        </Text3D>
+      </Center>
+      <Center position={[0, -0.4, -0.8]}>
+        <Text3D
+          font="/fonts/Inter_Bold.json"
+          size={0.5}
+          height={0.1}
+          curveSegments={4}
+          bevelEnabled={false}
+        >
+          Glass
+          <meshStandardMaterial color="#667eea" />
+        </Text3D>
+      </Center>
 
       {/* Central hero glass panel - optimized */}
       <Float
@@ -46,12 +72,12 @@ export default function HeroSection() {
           borderRadius={0.2}
           borderSmoothness={12}
           position={[0, 0.2, 0]}
-          color={new THREE.Color(1.2, 1.2, 1.3)}
-          transmission={0.98}
-          roughness={0.05}
-          ior={2.2}
+          color={new THREE.Color(1.1, 1.1, 1.15)}
+          transmission={0.95}
+          roughness={0.08}
+          ior={1.8}
           chromaticAberration={0.03}
-          thickness={0.6}
+          thickness={0.5}
           whileHover={{ scale: 1.05, rotateY: 0.05 }}
           whileTap={{ scale: 0.98, z: -0.1 }}
           extrudeSettings={{
@@ -78,12 +104,12 @@ export default function HeroSection() {
           borderSmoothness={16}
           position={[-1.2, 0.5, -0.3]}
           rotation={[0, 0.3, 0]}
-          color={new THREE.Color(1.5, 1.2, 1.8)}
-          transmission={0.95}
-          roughness={0.02}
-          ior={2.8}
+          color={new THREE.Color(1.3, 1.1, 1.5)}
+          transmission={0.92}
+          roughness={0.05}
+          ior={2.2}
           chromaticAberration={0.08}
-          thickness={0.8}
+          thickness={0.6}
           whileHover={{ scale: 1.15, rotateZ: 0.1 }}
           whileTap={{ scale: 0.9 }}
           extrudeSettings={{
@@ -110,12 +136,12 @@ export default function HeroSection() {
           borderSmoothness={10}
           position={[1.3, -0.2, -0.2]}
           rotation={[0, -0.2, 0.1]}
-          color={new THREE.Color(1.2, 1.5, 1.3)}
-          transmission={0.92}
-          roughness={0.08}
-          ior={2.0}
+          color={new THREE.Color(1.1, 1.3, 1.2)}
+          transmission={0.9}
+          roughness={0.1}
+          ior={1.8}
           chromaticAberration={0.05}
-          thickness={0.5}
+          thickness={0.4}
           whileHover={{ scale: 1.1, rotateY: -0.15 }}
           whileTap={{ scale: 0.95, y: -0.3 }}
           extrudeSettings={{
@@ -136,12 +162,12 @@ export default function HeroSection() {
           borderRadius={0.5}
           borderSmoothness={12}
           position={[-0.9, -0.5, 0.3]}
-          color={new THREE.Color(2, 1.5, 2)}
+          color={new THREE.Color(1.5, 1.2, 1.8)}
           transmission={1}
           roughness={0}
-          ior={3}
+          ior={2.5}
           chromaticAberration={0.15}
-          thickness={1}
+          thickness={0.8}
           whileHover={{ scale: 1.3 }}
           extrudeSettings={{
             depth: 0.005,
@@ -160,12 +186,12 @@ export default function HeroSection() {
           borderRadius={0.5}
           borderSmoothness={12}
           position={[1.1, 0.7, 0.2]}
-          color={new THREE.Color(1.5, 2, 1.5)}
+          color={new THREE.Color(1.2, 1.6, 1.3)}
           transmission={1}
           roughness={0}
-          ior={2.5}
+          ior={2.2}
           chromaticAberration={0.1}
-          thickness={0.8}
+          thickness={0.6}
           whileHover={{ scale: 1.4 }}
           extrudeSettings={{
             depth: 0.005,
@@ -176,28 +202,6 @@ export default function HeroSection() {
           }}
         />
       </Float>
-
-      {/* Reflective floor */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -1.2, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[10, 10]} />
-        <MeshReflectorMaterial
-          blur={[300, 100]}
-          resolution={512}
-          mixBlur={0.8}
-          mixStrength={40}
-          roughness={0.8}
-          depthScale={1.2}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.4}
-          color="#101020"
-          metalness={0.5}
-          mirror={0.5}
-        />
-      </mesh>
     </group>
   )
 }

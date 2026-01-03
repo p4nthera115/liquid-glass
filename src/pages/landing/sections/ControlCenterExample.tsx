@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import { useFrame } from "@react-three/fiber"
-import { Html, MeshReflectorMaterial } from "@react-three/drei"
+import { Html, Text3D, Center } from "@react-three/drei"
 import { LiquidGlass } from "../../../components/liquid-glass"
 import * as THREE from "three"
 
@@ -132,12 +132,12 @@ function ControlPanelItem({
         borderRadius={borderRadius}
         borderSmoothness={8}
         position={[0, 0, 0]}
-        color={isActive ? panel.color : new THREE.Color(0.5, 0.5, 0.55)}
-        transmission={isActive ? 0.85 : 0.95}
-        roughness={isActive ? 0.05 : 0.12}
-        ior={isActive ? 2.2 : 1.8}
+        color={isActive ? panel.color : new THREE.Color(0.7, 0.7, 0.75)}
+        transmission={isActive ? 0.85 : 0.92}
+        roughness={isActive ? 0.05 : 0.15}
+        ior={isActive ? 2.0 : 1.6}
         chromaticAberration={isActive ? 0.02 : 0}
-        thickness={isActive ? 0.6 : 0.3}
+        thickness={isActive ? 0.5 : 0.25}
         whileHover={{ scale: 1.08, z: 0.05 }}
         whileTap={{ scale: 0.95 }}
         whileActive={{ scale: 1.05 }}
@@ -182,7 +182,7 @@ function ControlPanelItem({
             style={{
               fontSize: "8px",
               fontWeight: 500,
-              color: isActive ? "white" : "rgba(255,255,255,0.6)",
+              color: isActive ? "#1a1a2e" : "rgba(0,0,0,0.5)",
               fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
               whiteSpace: "nowrap",
             }}
@@ -210,7 +210,7 @@ function MusicPlayerContent({ isActive }: { isActive: boolean }) {
           alignItems: "center",
           gap: "4px",
           fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
-          color: "white",
+          color: "#1a1a2e",
           opacity: isActive ? 1 : 0.7,
           transform: "scale(0.7)",
         }}
@@ -232,7 +232,7 @@ function MusicPlayerContent({ isActive }: { isActive: boolean }) {
         </div>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: "9px", fontWeight: 600 }}>Blinding Lights</div>
-          <div style={{ fontSize: "7px", opacity: 0.7 }}>The Weeknd</div>
+          <div style={{ fontSize: "7px", opacity: 0.6 }}>The Weeknd</div>
         </div>
         <div
           style={{
@@ -281,15 +281,29 @@ export default function ControlCenterExample() {
 
   return (
     <group ref={groupRef}>
-      {/* Lighting */}
-      <directionalLight position={[3, 5, 5]} intensity={2} color="#ffffff" />
-      <directionalLight position={[-3, 3, -2]} intensity={0.8} color="#667eea" />
-      <ambientLight intensity={0.35} />
+      {/* Lighting for light mode */}
+      <directionalLight position={[3, 5, 5]} intensity={1.5} color="#ffffff" />
+      <directionalLight position={[-3, 3, -2]} intensity={0.6} color="#667eea" />
+      <ambientLight intensity={0.5} />
 
       {/* Colored accent lights */}
-      <pointLight position={[-2, 2, 3]} intensity={2} color="#667eea" />
-      <pointLight position={[2, 1, 3]} intensity={2} color="#ec4899" />
-      <pointLight position={[0, -2, 2]} intensity={1.5} color="#10b981" />
+      <pointLight position={[-2, 2, 3]} intensity={1.5} color="#667eea" />
+      <pointLight position={[2, 1, 3]} intensity={1.5} color="#ec4899" />
+      <pointLight position={[0, -2, 2]} intensity={1} color="#10b981" />
+
+      {/* 3D Text behind the glass */}
+      <Center position={[0, 0, -0.8]}>
+        <Text3D
+          font="/fonts/Inter_Bold.json"
+          size={0.22}
+          height={0.05}
+          curveSegments={4}
+          bevelEnabled={false}
+        >
+          Control Center
+          <meshStandardMaterial color="#1a1a2e" />
+        </Text3D>
+      </Center>
 
       {/* Main Control Center background panel - optimized */}
       <LiquidGlass
@@ -298,13 +312,13 @@ export default function ControlCenterExample() {
         borderRadius={0.2 * SCALE}
         borderSmoothness={10}
         position={[-0.06 * SCALE, 0, -0.1]}
-        color={new THREE.Color(0.3, 0.3, 0.35)}
-        transmission={0.75}
-        roughness={0.2}
-        ior={1.5}
+        color={new THREE.Color(0.85, 0.85, 0.9)}
+        transmission={0.8}
+        roughness={0.15}
+        ior={1.4}
         chromaticAberration={0.01}
-        thickness={0.2}
-        anisotropicBlur={0.3}
+        thickness={0.15}
+        anisotropicBlur={0.2}
         extrudeSettings={{
           depth: 0.03,
           bevelEnabled: true,
@@ -333,12 +347,11 @@ export default function ControlCenterExample() {
       <Html position={[-0.06 * SCALE, 1 * SCALE, 0.06]} center distanceFactor={4}>
         <div
           style={{
-            color: "white",
+            color: "#1a1a2e",
             fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
             fontSize: "12px",
             fontWeight: 600,
             opacity: 0.9,
-            textShadow: "0 2px 10px rgba(0,0,0,0.3)",
           }}
         >
           {new Date().toLocaleTimeString([], {
@@ -347,32 +360,6 @@ export default function ControlCenterExample() {
           })}
         </div>
       </Html>
-
-      {/* Reflective floor */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -1.2, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[12, 12]} />
-        <MeshReflectorMaterial
-          blur={[400, 100]}
-          resolution={512}
-          mixBlur={0.85}
-          mixStrength={60}
-          roughness={0.85}
-          depthScale={1.2}
-          color="#060610"
-          metalness={0.5}
-          mirror={0.5}
-        />
-      </mesh>
-
-      {/* Background gradient plane */}
-      <mesh position={[0, 0, -2]}>
-        <planeGeometry args={[10, 7]} />
-        <meshBasicMaterial color="#050510" transparent opacity={0.8} />
-      </mesh>
     </group>
   )
 }
