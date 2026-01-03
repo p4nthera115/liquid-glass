@@ -5,8 +5,8 @@ export { default as LiquidGlass } from "./liquid-glass"
 export { useLiquidGlassAnimation } from "./use-liquid-glass-animation"
 
 // Types
-export type { 
-  LiquidGlassProps, 
+export type {
+  LiquidGlassProps,
   AnimationValues,
   TransitionConfig,
   ExtrudeSettings,
@@ -15,8 +15,8 @@ export type {
 } from "./types"
 
 // Constants
-export { 
-  DEFAULT_PROPS, 
+export {
+  DEFAULT_PROPS,
   DEFAULT_ANIMATIONS,
   MATERIAL_PRESETS,
   TRANSITION_PRESETS,

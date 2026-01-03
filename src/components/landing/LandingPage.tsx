@@ -1,418 +1,345 @@
 import { Canvas } from "@react-three/fiber"
-import { 
-  OrbitControls, 
-  Environment, 
+import {
+  OrbitControls,
+  Environment,
   Float,
-  Text,
   Html,
 } from "@react-three/drei"
 import { Suspense, useState } from "react"
-import { LiquidGlass, MATERIAL_PRESETS, TRANSITION_PRESETS } from "../liquid-glass"
+import {
+  LiquidGlass,
+  MATERIAL_PRESETS,
+  TRANSITION_PRESETS,
+  type MaterialPreset,
+} from "../liquid-glass"
 import { Color } from "three"
 import "./landing.css"
 
+type DemoTab = "hero" | "presets" | "interactive" | "animations"
+
 /**
- * Hero Section - Main showcase with animated glass panels
+ * Hero Scene - Main showcase
  */
 function HeroScene() {
-  const [activePreset, setActivePreset] = useState<"glass" | "crystal" | "frosted" | "diamond">("crystal")
-  
+  const [activePreset, setActivePreset] = useState<MaterialPreset>("crystal")
+
+  const cyclePreset = () => {
+    const presets: MaterialPreset[] = ["glass", "crystal", "frosted", "diamond", "water", "ice", "plastic"]
+    const currentIndex = presets.indexOf(activePreset)
+    setActivePreset(presets[(currentIndex + 1) % presets.length])
+  }
+
   return (
     <>
-      {/* Ambient lighting */}
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[5, 5, 5]} intensity={1.2} castShadow />
       <directionalLight position={[-5, 3, -5]} intensity={0.5} color="#4a9eff" />
-      
-      {/* Main hero glass panel */}
-      <Float
-        speed={2}
-        rotationIntensity={0.3}
-        floatIntensity={0.5}
-      >
+
+      <Float speed={2} rotationIntensity={0.2} floatIntensity={0.4}>
         <LiquidGlass
-          position={[0, 0.3, 0]}
-          width={2.5}
-          height={2.5}
-          borderRadius={0.6}
-          borderSmoothness={40}
+          position={[0, 0, 0]}
+          width={2.2}
+          height={2.2}
+          borderRadius={0.5}
+          borderSmoothness={20}
           preset={activePreset}
-          initial={{ scale: 0, opacity: 0, rotateY: -0.5 }}
+          initial={{ scale: 0, opacity: 0, rotateY: -0.3 }}
           animate={{ scale: 1, opacity: 1, rotateY: 0 }}
-          whileHover={{ scale: 1.03, rotateY: 0.05 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: 1.04, rotateY: 0.03 }}
+          whileTap={{ scale: 0.97 }}
           transition={TRANSITION_PRESETS.smooth}
-          onClick={() => {
-            const presets: ("glass" | "crystal" | "frosted" | "diamond")[] = ["glass", "crystal", "frosted", "diamond"]
-            const currentIndex = presets.indexOf(activePreset)
-            setActivePreset(presets[(currentIndex + 1) % presets.length])
+          onClick={cyclePreset}
+          extrudeSettings={{
+            depth: 0,
+            bevelEnabled: true,
+            bevelThickness: 0.015,
+            bevelSize: 0.025,
+            bevelSegments: 16,
           }}
         />
       </Float>
 
-      {/* Floating accent panels */}
-      <Float speed={3} rotationIntensity={0.2} floatIntensity={0.3}>
-        <LiquidGlass
-          position={[-1.8, -0.8, -0.5]}
-          width={0.8}
-          height={0.8}
-          borderRadius={0.5}
-          preset="water"
-          initial={{ scale: 0, x: -3 }}
-          animate={{ scale: 1, x: -1.8 }}
-          whileHover={{ scale: 1.1, rotateZ: 0.1 }}
-          transition={{ ...TRANSITION_PRESETS.bouncy, stiffness: 12 }}
-        />
-      </Float>
+      <Html center position={[0, -1.6, 0]}>
+        <div className="scene-label">
+          <span className="preset-name">{activePreset}</span>
+          <span className="preset-hint">click to change preset</span>
+        </div>
+      </Html>
 
-      <Float speed={2.5} rotationIntensity={0.15} floatIntensity={0.4}>
-        <LiquidGlass
-          position={[2, 1, -0.3]}
-          width={0.6}
-          height={0.6}
-          borderRadius={0.3}
-          preset="ice"
-          initial={{ scale: 0, y: 3 }}
-          animate={{ scale: 1, y: 1 }}
-          whileHover={{ scale: 1.15 }}
-          transition={TRANSITION_PRESETS.bouncy}
-        />
-      </Float>
-
-      <Float speed={1.8} rotationIntensity={0.25} floatIntensity={0.35}>
-        <LiquidGlass
-          position={[1.5, -1.2, 0.2]}
-          width={1}
-          height={0.5}
-          borderRadius={0.25}
-          preset="plastic"
-          color={new Color(0.95, 0.85, 1)}
-          initial={{ scale: 0, rotateZ: 0.5 }}
-          animate={{ scale: 1, rotateZ: 0 }}
-          whileHover={{ scaleX: 1.1 }}
-          transition={TRANSITION_PRESETS.smooth}
-        />
-      </Float>
-
-      {/* Environment for reflections */}
       <Environment preset="city" />
     </>
   )
 }
 
 /**
- * Presets showcase section
+ * Presets Scene - Cycle through presets one at a time
  */
-function PresetsShowcase() {
-  const presets = Object.keys(MATERIAL_PRESETS) as (keyof typeof MATERIAL_PRESETS)[]
-  
+function PresetsScene() {
+  const presets = Object.keys(MATERIAL_PRESETS) as MaterialPreset[]
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const currentPreset = presets[currentIndex]
+
+  const nextPreset = () => setCurrentIndex((i) => (i + 1) % presets.length)
+  const prevPreset = () => setCurrentIndex((i) => (i - 1 + presets.length) % presets.length)
+
   return (
     <>
       <ambientLight intensity={0.4} />
       <directionalLight position={[3, 5, 5]} intensity={1.2} />
-      
-      {presets.map((preset, i) => {
-        const col = i % 4
-        const row = Math.floor(i / 4)
-        const x = (col - 1.5) * 1.3
-        const y = -row * 1.3 + 0.5
-        
-        return (
-          <group key={preset} position={[x, y, 0]}>
-            <Float speed={2 + i * 0.2} floatIntensity={0.2}>
-              <LiquidGlass
-                width={1}
-                height={1}
-                borderRadius={0.3}
-                preset={preset}
-                initial={{ scale: 0, rotateY: Math.PI }}
-                animate={{ scale: 1, rotateY: 0 }}
-                whileHover={{ scale: 1.1, z: 0.3 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{
-                  ...TRANSITION_PRESETS.bouncy,
-                  stiffness: 15 + i * 2,
-                }}
-              />
-            </Float>
-            <Text
-              position={[0, -0.7, 0]}
-              fontSize={0.12}
-              color="#334155"
-              anchorX="center"
-              anchorY="top"
-              font="/fonts/GeistMono-Medium.woff"
-            >
-              {preset}
-            </Text>
-          </group>
-        )
-      })}
-      
+
+      <Float speed={2} floatIntensity={0.3}>
+        <LiquidGlass
+          key={currentPreset} // Force remount for initial animation
+          width={1.8}
+          height={1.8}
+          borderRadius={0.4}
+          borderSmoothness={20}
+          preset={currentPreset}
+          initial={{ scale: 0, rotateY: 0.5 }}
+          animate={{ scale: 1, rotateY: 0 }}
+          whileHover={{ scale: 1.06, z: 0.2 }}
+          whileTap={{ scale: 0.95 }}
+          transition={TRANSITION_PRESETS.bouncy}
+          extrudeSettings={{
+            depth: 0,
+            bevelEnabled: true,
+            bevelThickness: 0.015,
+            bevelSize: 0.025,
+            bevelSegments: 16,
+          }}
+        />
+      </Float>
+
+      <Html center position={[0, -1.4, 0]}>
+        <div className="preset-nav">
+          <button className="preset-btn" onClick={prevPreset}>←</button>
+          <div className="preset-info">
+            <span className="preset-name">{currentPreset}</span>
+            <span className="preset-count">{currentIndex + 1} / {presets.length}</span>
+          </div>
+          <button className="preset-btn" onClick={nextPreset}>→</button>
+        </div>
+      </Html>
+
       <Environment preset="apartment" />
     </>
   )
 }
 
 /**
- * Interactive demo section
+ * Interactive Scene - Counter demo
  */
-function InteractiveDemo() {
+function InteractiveScene() {
   const [count, setCount] = useState(0)
   const [isActive, setIsActive] = useState(false)
-  
+
   return (
     <>
-      <ambientLight intensity={0.3} />
+      <ambientLight intensity={0.4} />
       <directionalLight position={[2, 4, 3]} intensity={1} />
-      <pointLight position={[-3, 2, 2]} intensity={0.5} color="#ff6b6b" />
-      <pointLight position={[3, 2, 2]} intensity={0.5} color="#4ecdc4" />
-      
-      {/* Counter button */}
-      <group position={[-1.5, 0.5, 0]}>
-        <Float speed={2} floatIntensity={0.15}>
-          <LiquidGlass
-            width={1.2}
-            height={1.2}
-            borderRadius={0.6}
-            preset="crystal"
-            color={new Color(1, 0.95, 0.9)}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92, scaleZ: 0.8 }}
-            onClick={() => setCount(c => c + 1)}
-            transition={TRANSITION_PRESETS.snappy}
-          />
-        </Float>
-        <Html center position={[0, 0, 0.1]}>
-          <div className="demo-label">
-            <span className="demo-count">{count}</span>
-            <span className="demo-text">clicks</span>
-          </div>
-        </Html>
-      </group>
+      <pointLight position={[-3, 2, 2]} intensity={0.4} color="#ff6b6b" />
+      <pointLight position={[3, 2, 2]} intensity={0.4} color="#4ecdc4" />
 
-      {/* Toggle button */}
-      <group position={[0, 0.5, 0]}>
-        <Float speed={2.2} floatIntensity={0.15}>
-          <LiquidGlass
-            width={1.2}
-            height={1.2}
-            borderRadius={0.3}
-            preset="glass"
-            color={isActive ? new Color(0.8, 1, 0.85) : new Color(1, 1, 1)}
-            active={isActive}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            whileActive={{ scale: 1.1, rotateZ: 0.05 }}
-            onToggle={setIsActive}
-            transition={TRANSITION_PRESETS.bouncy}
-          />
-        </Float>
-        <Html center position={[0, 0, 0.1]}>
-          <div className="demo-label">
-            <span className="demo-status">{isActive ? "ON" : "OFF"}</span>
-            <span className="demo-text">toggle</span>
-          </div>
-        </Html>
-      </group>
-
-      {/* Disabled button */}
-      <group position={[1.5, 0.5, 0]}>
-        <Float speed={1.8} floatIntensity={0.1}>
-          <LiquidGlass
-            width={1.2}
-            height={1.2}
-            borderRadius={0.2}
-            preset="frosted"
-            disabled
-            whileDisabled={{ scale: 0.95, opacity: 0.5 }}
-          />
-        </Float>
-        <Html center position={[0, 0, 0.1]}>
-          <div className="demo-label demo-disabled">
-            <span className="demo-text">disabled</span>
-          </div>
-        </Html>
-      </group>
-
-      {/* Animation showcase */}
-      <group position={[0, -1.2, 0]}>
+      {/* Main interactive panel */}
+      <Float speed={2} floatIntensity={0.2}>
         <LiquidGlass
-          width={4}
-          height={0.8}
-          borderRadius={0.4}
-          preset="water"
-          initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 1 }}
-          whileHover={{ scaleY: 1.2 }}
-          transition={TRANSITION_PRESETS.slow}
+          position={[0, 0.3, 0]}
+          width={2}
+          height={2}
+          borderRadius={0.5}
+          borderSmoothness={20}
+          preset="crystal"
+          color={isActive ? new Color(0.85, 1, 0.9) : new Color(1, 1, 1)}
+          active={isActive}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.93, scaleZ: 0.85 }}
+          whileActive={{ scale: 1.08 }}
+          onClick={() => {
+            setCount((c) => c + 1)
+            setIsActive(!isActive)
+          }}
+          transition={TRANSITION_PRESETS.snappy}
+          extrudeSettings={{
+            depth: 0,
+            bevelEnabled: true,
+            bevelThickness: 0.015,
+            bevelSize: 0.025,
+            bevelSegments: 16,
+          }}
         />
-        <Html center position={[0, 0, 0.1]}>
-          <div className="demo-bar-label">
-            Hover to expand
-          </div>
-        </Html>
-      </group>
-      
+      </Float>
+
+      <Html center position={[0, 0.3, 0.1]}>
+        <div className="demo-label">
+          <span className="demo-count">{count}</span>
+          <span className="demo-text">clicks</span>
+          <span className={`demo-status ${isActive ? "active" : ""}`}>
+            {isActive ? "ACTIVE" : "INACTIVE"}
+          </span>
+        </div>
+      </Html>
+
+      <Html center position={[0, -1.3, 0]}>
+        <div className="scene-hint">
+          Click to increment & toggle state
+        </div>
+      </Html>
+
       <Environment preset="sunset" />
     </>
   )
 }
 
 /**
- * Animation curves showcase
+ * Animations Scene - Compare transition presets
  */
-function AnimationShowcase() {
+function AnimationsScene() {
   const transitions = [
     { name: "snappy", preset: TRANSITION_PRESETS.snappy },
     { name: "smooth", preset: TRANSITION_PRESETS.smooth },
     { name: "bouncy", preset: TRANSITION_PRESETS.bouncy },
     { name: "slow", preset: TRANSITION_PRESETS.slow },
   ]
-  
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const current = transitions[currentIndex]
+  const [key, setKey] = useState(0) // For re-triggering animation
+
+  const nextTransition = () => {
+    setCurrentIndex((i) => (i + 1) % transitions.length)
+    setKey((k) => k + 1)
+  }
+  const prevTransition = () => {
+    setCurrentIndex((i) => (i - 1 + transitions.length) % transitions.length)
+    setKey((k) => k + 1)
+  }
+  const replay = () => setKey((k) => k + 1)
+
   return (
     <>
       <ambientLight intensity={0.4} />
       <directionalLight position={[0, 5, 5]} intensity={1} />
-      
-      {transitions.map((t, i) => (
-        <group key={t.name} position={[(i - 1.5) * 1.4, 0, 0]}>
-          <Float speed={2} floatIntensity={0.1}>
-            <LiquidGlass
-              width={1}
-              height={1.5}
-              borderRadius={0.3}
-              preset="crystal"
-              color={new Color(0.9 + i * 0.03, 0.95, 1)}
-              whileHover={{ scale: 1.15, rotateZ: 0.1 }}
-              whileTap={{ scale: 0.85 }}
-              transition={t.preset}
-            />
-          </Float>
-          <Text
-            position={[0, -1, 0]}
-            fontSize={0.14}
-            color="#475569"
-            anchorX="center"
-            anchorY="top"
-            font="/fonts/GeistMono-Medium.woff"
-          >
-            {t.name}
-          </Text>
-        </group>
-      ))}
-      
+
+      <Float speed={2} floatIntensity={0.15}>
+        <LiquidGlass
+          key={`${current.name}-${key}`}
+          width={1.8}
+          height={2.2}
+          borderRadius={0.35}
+          borderSmoothness={20}
+          preset="crystal"
+          color={new Color(0.95, 0.97, 1)}
+          initial={{ scale: 0, opacity: 0, y: -1 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          whileHover={{ scale: 1.08, rotateZ: 0.05 }}
+          whileTap={{ scale: 0.9 }}
+          transition={current.preset}
+          extrudeSettings={{
+            depth: 0,
+            bevelEnabled: true,
+            bevelThickness: 0.015,
+            bevelSize: 0.025,
+            bevelSegments: 16,
+          }}
+        />
+      </Float>
+
+      <Html center position={[0, -1.5, 0]}>
+        <div className="animation-nav">
+          <button className="preset-btn" onClick={prevTransition}>←</button>
+          <div className="preset-info">
+            <span className="preset-name">{current.name}</span>
+            <button className="replay-btn" onClick={replay}>↻ replay</button>
+          </div>
+          <button className="preset-btn" onClick={nextTransition}>→</button>
+        </div>
+      </Html>
+
       <Environment preset="dawn" />
     </>
   )
 }
 
 /**
- * Section wrapper component
- */
-function Section({ 
-  id, 
-  title, 
-  subtitle,
-  children,
-  dark = false,
-}: { 
-  id: string
-  title: string
-  subtitle?: string
-  children: React.ReactNode
-  dark?: boolean
-}) {
-  return (
-    <section id={id} className={`section ${dark ? "section-dark" : ""}`}>
-      <div className="section-header">
-        <h2 className="section-title">{title}</h2>
-        {subtitle && <p className="section-subtitle">{subtitle}</p>}
-      </div>
-      <div className="section-canvas">
-        <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-          <Suspense fallback={null}>
-            {children}
-          </Suspense>
-        </Canvas>
-      </div>
-    </section>
-  )
-}
-
-/**
- * Landing Page Component
+ * Main Landing Page Component
+ * Uses a single Canvas with tab-based navigation to avoid triangle limit issues
  */
 export default function LandingPage() {
+  const [activeTab, setActiveTab] = useState<DemoTab>("hero")
+
+  const tabs: { id: DemoTab; label: string; description: string }[] = [
+    { id: "hero", label: "Showcase", description: "Interactive glass component with material presets" },
+    { id: "presets", label: "Presets", description: "7 built-in material presets for different glass effects" },
+    { id: "interactive", label: "Interactive", description: "Hover, tap, toggle states with event callbacks" },
+    { id: "animations", label: "Animations", description: "4 spring-based transition presets" },
+  ]
+
+  const currentTab = tabs.find((t) => t.id === activeTab)!
+
   return (
     <div className="landing">
-      {/* Navigation */}
-      <nav className="nav">
-        <div className="nav-brand">
-          <span className="nav-logo">◇</span>
-          <span className="nav-title">Liquid Glass</span>
+      {/* Header */}
+      <header className="header">
+        <div className="header-brand">
+          <span className="header-logo">◇</span>
+          <span className="header-title">Liquid Glass</span>
         </div>
-        <div className="nav-links">
-          <a href="#presets">Presets</a>
-          <a href="#interactive">Interactive</a>
-          <a href="#animations">Animations</a>
-          <a href="https://github.com" target="_blank" rel="noopener" className="nav-github">
-            GitHub
-          </a>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <header className="hero">
-        <div className="hero-content">
-          <h1 className="hero-title">
-            Liquid<span className="hero-accent">Glass</span>
-          </h1>
-          <p className="hero-subtitle">
-            Beautiful, interactive glass-effect components for React Three Fiber.
-            <br />
-            Spring-based animations. Material presets. Fully accessible.
-          </p>
-          <div className="hero-actions">
-            <a href="#interactive" className="btn btn-primary">
-              Try It Out
-            </a>
-            <a href="#presets" className="btn btn-secondary">
-              View Presets
-            </a>
-          </div>
-          <div className="hero-hint">
-            <span>Click the glass to change presets</span>
-          </div>
-        </div>
-        <div className="hero-canvas">
-          <Canvas camera={{ position: [0, 0, 4], fov: 50 }}>
-            <Suspense fallback={null}>
-              <HeroScene />
-            </Suspense>
-            <OrbitControls 
-              enableZoom={false}
-              enablePan={false}
-              maxPolarAngle={Math.PI / 1.8}
-              minPolarAngle={Math.PI / 3}
-            />
-          </Canvas>
-        </div>
+        <p className="header-tagline">
+          Beautiful glass-effect components for React Three Fiber
+        </p>
       </header>
 
-      {/* Features strip */}
-      <div className="features-strip">
+      {/* Main Canvas - Single instance */}
+      <div className="canvas-container">
+        <Canvas
+          camera={{ position: [0, 0, 4], fov: 50 }}
+          gl={{ antialias: true, alpha: true }}
+        >
+          <Suspense fallback={null}>
+            {activeTab === "hero" && <HeroScene />}
+            {activeTab === "presets" && <PresetsScene />}
+            {activeTab === "interactive" && <InteractiveScene />}
+            {activeTab === "animations" && <AnimationsScene />}
+          </Suspense>
+          <OrbitControls
+            enableZoom={false}
+            enablePan={false}
+            maxPolarAngle={Math.PI / 1.6}
+            minPolarAngle={Math.PI / 3}
+          />
+        </Canvas>
+      </div>
+
+      {/* Tab Navigation */}
+      <nav className="tab-nav">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+
+      {/* Description */}
+      <div className="tab-description">
+        <p>{currentTab.description}</p>
+      </div>
+
+      {/* Features */}
+      <div className="features">
         <div className="feature">
           <span className="feature-icon">⚡</span>
           <span className="feature-text">Spring Physics</span>
         </div>
         <div className="feature">
           <span className="feature-icon">🎨</span>
-          <span className="feature-text">7 Material Presets</span>
+          <span className="feature-text">7 Presets</span>
         </div>
         <div className="feature">
           <span className="feature-icon">✨</span>
-          <span className="feature-text">Interactive States</span>
+          <span className="feature-text">Interactive</span>
         </div>
         <div className="feature">
           <span className="feature-icon">♿</span>
@@ -420,41 +347,11 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Presets Section */}
-      <Section 
-        id="presets" 
-        title="Material Presets"
-        subtitle="Seven beautiful presets for common glass effects"
-      >
-        <PresetsShowcase />
-      </Section>
-
-      {/* Interactive Section */}
-      <Section 
-        id="interactive" 
-        title="Interactive States"
-        subtitle="Hover, tap, toggle, and disabled states with callbacks"
-        dark
-      >
-        <InteractiveDemo />
-      </Section>
-
-      {/* Animations Section */}
-      <Section 
-        id="animations" 
-        title="Animation Presets"
-        subtitle="Four transition presets for different feels"
-      >
-        <AnimationShowcase />
-      </Section>
-
-      {/* Code example */}
-      <section className="code-section">
-        <h2 className="section-title">Simple to Use</h2>
+      {/* Code Example */}
+      <div className="code-section">
+        <h3 className="code-title">Quick Start</h3>
         <pre className="code-block">
-          <code>{`import { LiquidGlass } from 'liquid-glass'
-
-<LiquidGlass
+          <code>{`<LiquidGlass
   width={2}
   height={1.5}
   borderRadius={0.3}
@@ -464,25 +361,15 @@ export default function LandingPage() {
   whileTap={{ scale: 0.95 }}
   
   initial={{ opacity: 0, scale: 0 }}
-  animate={{ opacity: 1, scale: 1 }}
-  
   onClick={() => console.log('clicked!')}
 />`}</code>
         </pre>
-      </section>
+      </div>
 
       {/* Footer */}
       <footer className="footer">
-        <div className="footer-content">
-          <p className="footer-brand">
-            <span className="nav-logo">◇</span> Liquid Glass
-          </p>
-          <p className="footer-copy">
-            Built with React Three Fiber & drei
-          </p>
-        </div>
+        <p>Built with React Three Fiber & drei</p>
       </footer>
     </div>
   )
 }
-
