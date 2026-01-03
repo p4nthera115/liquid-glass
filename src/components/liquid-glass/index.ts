@@ -1,38 +1,18 @@
-// Main component
 export { default as LiquidGlass } from "./liquid-glass"
-
-// Hook for custom implementations
-export { useLiquidGlassAnimation } from "./use-liquid-glass-animation"
-
-// Types
 export type {
   LiquidGlassProps,
   AnimationValues,
-  TransitionConfig,
   ExtrudeSettings,
-  MaterialPreset,
   AnimationState,
 } from "./types"
 
-// Constants
 export {
   DEFAULT_PROPS,
   DEFAULT_ANIMATIONS,
+  DEFAULT_POSITION,
+  DEFAULT_ROTATION,
   MATERIAL_PRESETS,
-  TRANSITION_PRESETS,
-  DEFAULT_TRANSITION,
-  DEFAULT_EXTRUDE_SETTINGS,
+  type MaterialPreset,
 } from "./constants"
 
-// Utilities
-export {
-  parseColor,
-  createRoundedRectangleShape,
-  mergeAnimations,
-  mergeTransition,
-  springStep,
-  springStep3D,
-  createInitialAnimationState,
-  clamp,
-  lerp,
-} from "./utils"
+export { parseColor, createRoundedRectangleShape, mergeAnimations } from "./utils"
