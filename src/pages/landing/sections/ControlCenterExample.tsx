@@ -231,7 +231,9 @@ function MusicPlayerContent({ isActive }: { isActive: boolean }) {
           🎵
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: "9px", fontWeight: 600 }}>Blinding Lights</div>
+          <div style={{ fontSize: "9px", fontWeight: 600 }}>
+            Blinding Lights
+          </div>
           <div style={{ fontSize: "7px", opacity: 0.6 }}>The Weeknd</div>
         </div>
         <div
@@ -283,7 +285,11 @@ export default function ControlCenterExample() {
     <group ref={groupRef}>
       {/* Lighting for light mode */}
       <directionalLight position={[3, 5, 5]} intensity={1.5} color="#ffffff" />
-      <directionalLight position={[-3, 3, -2]} intensity={0.6} color="#667eea" />
+      <directionalLight
+        position={[-3, 3, -2]}
+        intensity={0.6}
+        color="#667eea"
+      />
       <ambientLight intensity={0.5} />
 
       {/* Colored accent lights */}
@@ -344,7 +350,11 @@ export default function ControlCenterExample() {
       </group>
 
       {/* Time display at top */}
-      <Html position={[-0.06 * SCALE, 1 * SCALE, 0.06]} center distanceFactor={4}>
+      <Html
+        position={[-0.06 * SCALE, 1 * SCALE, 0.06]}
+        center
+        distanceFactor={4}
+      >
         <div
           style={{
             color: "#1a1a2e",

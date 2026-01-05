@@ -1,5 +1,9 @@
 export { default as LiquidGlass } from "./liquid-glass"
-export type { LiquidGlassProps, AnimationValues, ExtrudeSettings } from "./types"
+export type {
+  LiquidGlassProps,
+  AnimationValues,
+  ExtrudeSettings,
+} from "./types"
 
 export {
   DEFAULT_PROPS,

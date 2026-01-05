@@ -1,9 +1,6 @@
 import { useState } from "react"
 import { Html, Float, Text3D, Center } from "@react-three/drei"
-import {
-  LiquidGlass,
-  MATERIAL_PRESETS,
-} from "../../../components/liquid-glass"
+import { LiquidGlass, MATERIAL_PRESETS } from "../../../components/liquid-glass"
 import * as THREE from "three"
 
 interface ShowcaseItem {
@@ -64,7 +61,11 @@ export default function ShowcaseSection() {
     <group>
       {/* Lighting for light mode */}
       <directionalLight position={[5, 8, 5]} intensity={2} color="#fff" />
-      <directionalLight position={[-3, 4, -3]} intensity={0.8} color="#667eea" />
+      <directionalLight
+        position={[-3, 4, -3]}
+        intensity={0.8}
+        color="#667eea"
+      />
       <ambientLight intensity={0.6} />
 
       {/* Colored accent lights */}

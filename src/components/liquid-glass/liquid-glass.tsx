@@ -256,7 +256,15 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
 
     const currentAnimation = getCurrentAnimation()
     applyAnimation(currentAnimation)
-  }, [getCurrentAnimation, applyAnimation, position, rotation, width, height, baseScale])
+  }, [
+    getCurrentAnimation,
+    applyAnimation,
+    position,
+    rotation,
+    width,
+    height,
+    baseScale,
+  ])
 
   // Track if geometry needs to be updated
   const [geometryUpdateFlag, setGeometryUpdateFlag] = useState(0)
@@ -310,9 +318,10 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
       state.heightVelocity,
       delta
     )
-    if (heightAnimating) geometryNeedsUpdate = true
+    if (heightAnimating)
+      geometryNeedsUpdate = true
 
-    // Spring physics for uniform scale (GPU transform)
+      // Spring physics for uniform scale (GPU transform)
     ;[state.currentScale, state.scaleVelocity] = springStep(
       state.currentScale,
       state.targetScale,
