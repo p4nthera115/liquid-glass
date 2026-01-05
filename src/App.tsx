@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber"
 import { OrbitControls } from "@react-three/drei"
 import { Perf } from "r3f-perf"
 import Arrows from "./components/experiments/arrows"
+import HeroSection from "./components/HeroSection"
 
 export default function App() {
   return (
@@ -16,7 +17,8 @@ export default function App() {
         // minAzimuthAngle={0}
         // maxAzimuthAngle={0}
         />
-        <Arrows />
+        {/* <Arrows /> */}
+        <HeroSection />
       </Canvas>
     </div>
   )
