@@ -23,14 +23,14 @@ export default function HeroSection() {
       <pointLight position={[2, 2, 3]} intensity={1.5} color="#ec4899" />
       <pointLight position={[-2, -1, 2]} intensity={1} color="#667eea" />
 
-      <Text fontSize={1} position={[0, 0.4, -0.8]}>
+      <Text fontSize={1.8} position={[0, 0.2, -0.8]}>
         Liquid
-        <meshStandardMaterial color="#1a1a2e" />
+        <meshStandardMaterial color="#000" />
       </Text>
-      <Text fontSize={1} position={[0, -0.4, -0.8]}>
+      {/* <Text fontSize={1} position={[0, -0.8, -0.8]}>
         Glass
-        <meshStandardMaterial color="#667eea" />
-      </Text>
+        <meshStandardMaterial color="#000" />
+      </Text> */}
 
       {/* Central hero glass panel - optimized */}
       <Float
@@ -42,15 +42,15 @@ export default function HeroSection() {
         <LiquidGlass
           width={1}
           height={1}
-          borderRadius={0.2}
-          borderSmoothness={12}
+          borderRadius={1}
+          borderSmoothness={20}
           position={[0, 0.2, 0]}
-          // color={new THREE.Color(1.1, 1.1, 1.15)}
+          color={new THREE.Color(2, 2, 2)}
           transmission={1}
           roughness={0}
           ior={2}
           chromaticAberration={0.03}
-          thickness={0.3}
+          thickness={0.8}
           whileHover={{ scale: 1.05, rotateY: 0.05 }}
           whileTap={{ scale: 0.98, z: -0.1 }}
           extrudeSettings={{
@@ -75,7 +75,7 @@ export default function HeroSection() {
           width={0.45}
           height={0.45}
           borderRadius={0.5}
-          borderSmoothness={16}
+          borderSmoothness={30}
           position={[-1.2, 0.5, -0.3]}
           color={new THREE.Color(2, 1.1, 3)}
           transmission={0.92}
@@ -114,7 +114,7 @@ export default function HeroSection() {
           roughness={0.1}
           ior={1.8}
           chromaticAberration={0.05}
-          thickness={0.4}
+          thickness={0.6}
           whileHover={{ scale: 1.1, rotateY: -0.15 }}
           whileTap={{ scale: 0.95, y: -0.3 }}
           extrudeSettings={{
@@ -131,17 +131,17 @@ export default function HeroSection() {
       <Float speed={3} floatIntensity={0.6}>
         <LiquidGlass
           rotation={[0.2, -0.5, 0]}
-          width={0.18}
+          width={0.3}
           height={0.18}
           borderRadius={0.5}
           borderSmoothness={20}
-          position={[-0.9, -0.5, 0.3]}
+          position={[-0.8, -0.4, 0.3]}
           color={new THREE.Color(1.5, 1.2, 1.8)}
           transmission={1}
           roughness={0}
           ior={2.5}
           chromaticAberration={0.15}
-          thickness={0.2}
+          thickness={0.45}
           whileHover={{ scale: 1.3 }}
           extrudeSettings={{
             depth: 0.005,
@@ -158,7 +158,7 @@ export default function HeroSection() {
           rotation={[-0.4, 0.5, 0]}
           width={0.15}
           height={0.15}
-          borderRadius={0.5}
+          borderRadius={0.1}
           borderSmoothness={20}
           position={[1.1, 0.7, 0.2]}
           color={new THREE.Color(1.2, 1.6, 1.3)}
@@ -167,7 +167,7 @@ export default function HeroSection() {
           ior={2.2}
           chromaticAberration={0.1}
           thickness={0.6}
-          whileHover={{ scale: 1.4 }}
+          whileHover={{ scale: 1.2 }}
           extrudeSettings={{
             depth: 0.005,
             bevelEnabled: true,

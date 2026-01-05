@@ -1,11 +1,18 @@
 import { Suspense, useState } from "react"
-import { Canvas } from "@react-three/fiber"
-import { PerspectiveCamera, OrbitControls } from "@react-three/drei"
+import { Canvas, extend } from "@react-three/fiber"
+import {
+  PerspectiveCamera,
+  OrbitControls,
+  VideoTexture,
+} from "@react-three/drei"
 import { Perf } from "r3f-perf"
 import HeroSection from "./sections/HeroSection"
 import ShowcaseSection from "./sections/ShowcaseSection"
 import ControlCenterExample from "./sections/ControlCenterExample"
 import "./landing.css"
+import { geometry } from "maath"
+
+extend({ RoundedPlaneGeometry: geometry.RoundedPlaneGeometry })
 
 export default function LandingPage() {
   const [showPerf, setShowPerf] = useState(false)
@@ -58,6 +65,12 @@ export default function LandingPage() {
       <div className="landing-canvas">
         <Canvas gl={{ antialias: true, alpha: true }}>
           <color attach="background" args={["fff"]} />
+          {/* <mesh position={[0, 0, -0.4]}>
+            <roundedPlaneGeometry args={[1, 1, 0.5]} />
+            <VideoTexture src="/wave.mp4">
+              {(texture) => <meshBasicMaterial map={texture} />}
+            </VideoTexture>
+          </mesh> */}
 
           <PerspectiveCamera makeDefault position={[0, 0, 2.7]} fov={50} />
           {showPerf && <Perf position="bottom-left" />}
