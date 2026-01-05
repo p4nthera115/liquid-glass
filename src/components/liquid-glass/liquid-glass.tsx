@@ -11,7 +11,7 @@ import {
 import { MeshTransmissionMaterial } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 
-import type { LiquidGlassProps, AnimationValues, AnimationState } from "./types"
+import type { LiquidGlassProps, AnimationValues } from "./types"
 import { DEFAULT_PROPS, DEFAULT_ANIMATIONS } from "./constants"
 import {
   parseColor,
@@ -20,12 +20,12 @@ import {
 } from "./utils"
 
 /**
- * LiquidGlass - A performant, animated glass-effect 3D component
+ * LiquidGlass - An animated glass-effect 3D component
  *
- * Performance optimizations:
- * - Geometry is created once and cached (only recreated when base dimensions change)
- * - Animations use GPU-accelerated scale/position/rotation transforms
- * - Spring physics run on the render loop without triggering React re-renders
+ * Key behavior:
+ * - Width/height animations regenerate geometry to preserve border radius
+ * - Scale animations use GPU transforms (will scale border radius too)
+ * - Position/rotation use GPU transforms for performance
  *
  * @example
  * ```tsx
@@ -36,7 +36,7 @@ import {
  *   position={[0, 0, 0]}
  *   rotation={[0, Math.PI / 4, 0]}
  *   whileHover={{ scale: 1.1 }}
- *   whileTap={{ scale: 0.95 }}
+ *   whileTap={{ width: 2.5 }} // Preserves border radius
  * />
  * ```
  */
@@ -99,11 +99,12 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
   } = props
 
   // Parse initial scale prop
-  const baseScale = useMemo((): [number, number, number] => {
+  const baseScale = useMemo((): number => {
     if (typeof scaleProp === "number") {
-      return [scaleProp, scaleProp, scaleProp]
+      return scaleProp
     }
-    return scaleProp
+    // If array provided, use uniform (first value) for simplicity
+    return scaleProp[0]
   }, [scaleProp])
 
   const meshRef = useRef<THREE.Mesh>(null)
@@ -113,35 +114,38 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
   // Expose mesh ref to parent via forwardRef
   useImperativeHandle(ref, () => meshRef.current!, [])
 
-  // Animation state - kept in ref to avoid re-renders during animation
-  const animationState = useRef<AnimationState>({
-    // Current values (start at base)
-    currentScaleX: baseScale[0],
-    currentScaleY: baseScale[1],
-    currentScaleZ: baseScale[2],
-    currentPosition: [...position],
-    currentRotation: [...rotation],
+  // Animation state - uses width/height for geometry, scale for uniform scaling
+  const animationState = useRef({
+    // Current values
+    currentWidth: width,
+    currentHeight: height,
+    currentScale: baseScale, // Uniform scale (affects border radius)
+    currentPosition: [...position] as [number, number, number],
+    currentRotation: [...rotation] as [number, number, number],
     currentOpacity: 1,
 
     // Target values
-    targetScaleX: baseScale[0],
-    targetScaleY: baseScale[1],
-    targetScaleZ: baseScale[2],
-    targetPosition: [...position],
-    targetRotation: [...rotation],
+    targetWidth: width,
+    targetHeight: height,
+    targetScale: baseScale,
+    targetPosition: [...position] as [number, number, number],
+    targetRotation: [...rotation] as [number, number, number],
     targetOpacity: 1,
 
     // Velocities for spring physics
-    scaleXVelocity: 0,
-    scaleYVelocity: 0,
-    scaleZVelocity: 0,
-    positionVelocity: [0, 0, 0],
-    rotationVelocity: [0, 0, 0],
+    widthVelocity: 0,
+    heightVelocity: 0,
+    scaleVelocity: 0,
+    positionVelocity: [0, 0, 0] as [number, number, number],
+    rotationVelocity: [0, 0, 0] as [number, number, number],
     opacityVelocity: 0,
 
     // Base values for calculations
-    basePosition: [...position],
-    baseRotation: [...rotation],
+    baseWidth: width,
+    baseHeight: height,
+    baseScale: baseScale,
+    basePosition: [...position] as [number, number, number],
+    baseRotation: [...rotation] as [number, number, number],
   })
 
   // Get current animation based on state with proper layering
@@ -185,74 +189,77 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     whileActive,
   ])
 
-  // Apply animation targets - now uses scale transforms instead of geometry recreation
-  const applyAnimation = useCallback(
-    (animation: AnimationValues) => {
-      const state = animationState.current
+  // Apply animation targets
+  const applyAnimation = useCallback((animation: AnimationValues) => {
+    const state = animationState.current
 
-      // Calculate target scales
-      let targetScaleX = baseScale[0]
-      let targetScaleY = baseScale[1]
-      let targetScaleZ = baseScale[2]
+    // Start with base values
+    let targetWidth = state.baseWidth
+    let targetHeight = state.baseHeight
+    let targetScale = state.baseScale
 
-      // Handle uniform scale
-      if (animation.scale !== undefined) {
-        targetScaleX = baseScale[0] * animation.scale
-        targetScaleY = baseScale[1] * animation.scale
-        targetScaleZ = baseScale[2] * animation.scale
-      }
+    // Handle explicit width/height - these preserve border radius
+    if (animation.width !== undefined) {
+      targetWidth = animation.width
+    }
+    if (animation.height !== undefined) {
+      targetHeight = animation.height
+    }
 
-      // Handle per-axis scale (overrides uniform if set)
-      if (animation.scaleX !== undefined) {
-        targetScaleX = baseScale[0] * animation.scaleX
-      }
-      if (animation.scaleY !== undefined) {
-        targetScaleY = baseScale[1] * animation.scaleY
-      }
-      if (animation.scaleZ !== undefined) {
-        targetScaleZ = baseScale[2] * animation.scaleZ
-      }
+    // Handle uniform scale - this scales everything including border radius
+    if (animation.scale !== undefined) {
+      targetScale = state.baseScale * animation.scale
+    }
 
-      // Handle explicit width/height as scale factors relative to base
-      if (animation.width !== undefined) {
-        targetScaleX = (animation.width / width) * baseScale[0]
-      }
-      if (animation.height !== undefined) {
-        targetScaleY = (animation.height / height) * baseScale[1]
-      }
+    // Handle scaleX/scaleY as width/height multipliers (preserves border radius)
+    if (animation.scaleX !== undefined) {
+      targetWidth = state.baseWidth * animation.scaleX
+    }
+    if (animation.scaleY !== undefined) {
+      targetHeight = state.baseHeight * animation.scaleY
+    }
 
-      state.targetScaleX = targetScaleX
-      state.targetScaleY = targetScaleY
-      state.targetScaleZ = targetScaleZ
+    // scaleZ affects the uniform scale
+    if (animation.scaleZ !== undefined) {
+      targetScale = state.baseScale * animation.scaleZ
+    }
 
-      // Position targets
-      state.targetPosition = [
-        animation.x ?? state.basePosition[0],
-        animation.y ?? state.basePosition[1],
-        animation.z ?? state.basePosition[2],
-      ]
+    state.targetWidth = targetWidth
+    state.targetHeight = targetHeight
+    state.targetScale = targetScale
 
-      // Rotation targets (add to base rotation)
-      state.targetRotation = [
-        state.baseRotation[0] + (animation.rotateX ?? 0),
-        state.baseRotation[1] + (animation.rotateY ?? 0),
-        state.baseRotation[2] + (animation.rotateZ ?? 0),
-      ]
+    // Position targets
+    state.targetPosition = [
+      animation.x ?? state.basePosition[0],
+      animation.y ?? state.basePosition[1],
+      animation.z ?? state.basePosition[2],
+    ]
 
-      state.targetOpacity = animation.opacity ?? 1
-    },
-    [baseScale, width, height]
-  )
+    // Rotation targets (add to base rotation)
+    state.targetRotation = [
+      state.baseRotation[0] + (animation.rotateX ?? 0),
+      state.baseRotation[1] + (animation.rotateY ?? 0),
+      state.baseRotation[2] + (animation.rotateZ ?? 0),
+    ]
 
-  // Update base values and animation when props change
+    state.targetOpacity = animation.opacity ?? 1
+  }, [])
+
+  // Update base values when props change
   useEffect(() => {
     const state = animationState.current
     state.basePosition = [...position]
     state.baseRotation = [...rotation]
+    state.baseWidth = width
+    state.baseHeight = height
+    state.baseScale = baseScale
 
     const currentAnimation = getCurrentAnimation()
     applyAnimation(currentAnimation)
-  }, [getCurrentAnimation, applyAnimation, position, rotation])
+  }, [getCurrentAnimation, applyAnimation, position, rotation, width, height, baseScale])
+
+  // Track if geometry needs to be updated
+  const [geometryUpdateFlag, setGeometryUpdateFlag] = useState(0)
 
   // Spring physics helper
   const springStep = (
@@ -260,46 +267,56 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     target: number,
     velocity: number,
     delta: number
-  ): [number, number] => {
+  ): [number, number, boolean] => {
     const displacement = target - current
     const springForce = displacement * springStrength
     const newVelocity = (velocity + springForce * delta) * damping
     const newValue = current + newVelocity * delta * 50
 
-    // Stop small movements
-    if (
-      Math.abs(displacement) < animationThreshold &&
-      Math.abs(newVelocity) < animationThreshold
-    ) {
-      return [target, 0]
+    // Check if still animating
+    const isAnimating =
+      Math.abs(displacement) > animationThreshold ||
+      Math.abs(newVelocity) > animationThreshold
+
+    if (!isAnimating) {
+      return [target, 0, false]
     }
 
-    return [newValue, newVelocity]
+    return [newValue, newVelocity, true]
   }
 
-  // Animation frame loop - runs every frame, updates mesh transforms directly
+  // Animation frame loop
   useFrame((_, delta) => {
     if (!meshRef.current) return
 
     const state = animationState.current
+    let geometryNeedsUpdate = false
 
-    // Spring physics for scale
-    ;[state.currentScaleX, state.scaleXVelocity] = springStep(
-      state.currentScaleX,
-      state.targetScaleX,
-      state.scaleXVelocity,
+    // Spring physics for width (triggers geometry update)
+    let widthAnimating: boolean
+    ;[state.currentWidth, state.widthVelocity, widthAnimating] = springStep(
+      state.currentWidth,
+      state.targetWidth,
+      state.widthVelocity,
       delta
     )
-    ;[state.currentScaleY, state.scaleYVelocity] = springStep(
-      state.currentScaleY,
-      state.targetScaleY,
-      state.scaleYVelocity,
+    if (widthAnimating) geometryNeedsUpdate = true
+
+    // Spring physics for height (triggers geometry update)
+    let heightAnimating: boolean
+    ;[state.currentHeight, state.heightVelocity, heightAnimating] = springStep(
+      state.currentHeight,
+      state.targetHeight,
+      state.heightVelocity,
       delta
     )
-    ;[state.currentScaleZ, state.scaleZVelocity] = springStep(
-      state.currentScaleZ,
-      state.targetScaleZ,
-      state.scaleZVelocity,
+    if (heightAnimating) geometryNeedsUpdate = true
+
+    // Spring physics for uniform scale (GPU transform)
+    ;[state.currentScale, state.scaleVelocity] = springStep(
+      state.currentScale,
+      state.targetScale,
+      state.scaleVelocity,
       delta
     )
 
@@ -331,12 +348,8 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
       delta
     )
 
-    // Apply transforms directly to mesh (no React re-render needed)
-    meshRef.current.scale.set(
-      state.currentScaleX,
-      state.currentScaleY,
-      state.currentScaleZ
-    )
+    // Apply GPU transforms (scale is uniform, preserves aspect)
+    meshRef.current.scale.setScalar(state.currentScale)
     meshRef.current.position.set(...state.currentPosition)
     meshRef.current.rotation.set(...state.currentRotation)
 
@@ -347,17 +360,26 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
       ;(meshRef.current.material as THREE.Material).transparent =
         state.currentOpacity < 1
     }
+
+    // Trigger geometry update if width/height changed
+    if (geometryNeedsUpdate) {
+      setGeometryUpdateFlag((prev) => prev + 1)
+    }
   })
 
-  // Create geometry - only when base dimensions change (not during animation)
+  // Create geometry - recreated when width/height animate to preserve border radius
   const shape = useMemo(() => {
+    const currentWidth = animationState.current?.currentWidth || width
+    const currentHeight = animationState.current?.currentHeight || height
+
     return createRoundedRectangleShape(
-      width,
-      height,
+      currentWidth,
+      currentHeight,
       borderRadius,
       borderSmoothness
     )
-  }, [width, height, borderRadius, borderSmoothness])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [width, height, borderRadius, borderSmoothness, geometryUpdateFlag])
 
   // Merged extrude settings
   const mergedExtrudeSettings = useMemo(() => {

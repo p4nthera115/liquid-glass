@@ -66,49 +66,40 @@ export interface ExtrudeSettings {
   bevelSegments?: number
 }
 
+/**
+ * Animation values for whileHover, whileTap, whileActive, whileDisabled
+ *
+ * Behavior:
+ * - `width` / `height` - Animates actual dimensions, PRESERVES border radius
+ * - `scaleX` / `scaleY` - Multiplies base width/height, PRESERVES border radius
+ * - `scale` / `scaleZ` - Uniform scale transform, SCALES border radius too
+ * - `x` / `y` / `z` - Position animation
+ * - `rotateX` / `rotateY` / `rotateZ` - Rotation animation (radians)
+ * - `opacity` - Material opacity animation
+ */
 export interface AnimationValues {
+  // Position
   x?: number
   y?: number
   z?: number
+
+  // Uniform scale (scales everything including border radius)
   scale?: number
-  scaleX?: number
-  scaleY?: number
-  scaleZ?: number
+
+  // Dimensional scale (preserves border radius by regenerating geometry)
+  scaleX?: number // Multiplies width
+  scaleY?: number // Multiplies height
+  scaleZ?: number // Affects uniform scale
+
+  // Explicit dimensions (preserves border radius)
   width?: number
   height?: number
+
+  // Rotation (radians, added to base rotation)
   rotateX?: number
   rotateY?: number
   rotateZ?: number
+
+  // Opacity
   opacity?: number
-}
-
-// Internal animation state type for better type safety
-export interface AnimationState {
-  // Current values
-  currentScaleX: number
-  currentScaleY: number
-  currentScaleZ: number
-  currentPosition: [number, number, number]
-  currentRotation: [number, number, number]
-  currentOpacity: number
-
-  // Target values
-  targetScaleX: number
-  targetScaleY: number
-  targetScaleZ: number
-  targetPosition: [number, number, number]
-  targetRotation: [number, number, number]
-  targetOpacity: number
-
-  // Velocities for spring physics
-  scaleXVelocity: number
-  scaleYVelocity: number
-  scaleZVelocity: number
-  positionVelocity: [number, number, number]
-  rotationVelocity: [number, number, number]
-  opacityVelocity: number
-
-  // Base values for calculations
-  basePosition: [number, number, number]
-  baseRotation: [number, number, number]
 }

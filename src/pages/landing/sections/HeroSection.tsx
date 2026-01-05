@@ -167,7 +167,7 @@ export default function HeroSection() {
           ior={2.2}
           chromaticAberration={0.1}
           thickness={0.6}
-          whileHover={{ scale: 1.2 }}
+          whileHover={{ width: 0.5 }}
           extrudeSettings={{
             depth: 0.005,
             bevelEnabled: true,
