@@ -27,10 +27,6 @@ export default function HeroSection() {
         Liquid
         <meshStandardMaterial color="#000" />
       </Text>
-      {/* <Text fontSize={1} position={[0, -0.8, -0.8]}>
-        Glass
-        <meshStandardMaterial color="#000" />
-      </Text> */}
 
       {/* Central hero glass panel - optimized */}
       <Float

@@ -3,6 +3,7 @@ export type {
   LiquidGlassProps,
   AnimationValues,
   ExtrudeSettings,
+  BorderRadius,
 } from "./types"
 
 export {
@@ -17,5 +18,6 @@ export {
 export {
   parseColor,
   createRoundedRectangleShape,
+  normalizeBorderRadius,
   mergeAnimations,
 } from "./utils"

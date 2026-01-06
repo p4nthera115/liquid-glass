@@ -1,82 +1,105 @@
 import * as THREE from "three"
-import type { AnimationValues } from "./types"
+import type { AnimationValues, BorderRadius } from "./types"
+
+/**
+ * Normalize border radius to [topLeft, topRight, bottomRight, bottomLeft] format
+ */
+export function normalizeBorderRadius(
+  radius: BorderRadius,
+  maxRadius: number
+): [number, number, number, number] {
+  if (typeof radius === "number") {
+    const r = Math.min(radius, maxRadius)
+    return [r, r, r, r]
+  }
+  return [
+    Math.min(radius[0], maxRadius),
+    Math.min(radius[1], maxRadius),
+    Math.min(radius[2], maxRadius),
+    Math.min(radius[3], maxRadius),
+  ]
+}
 
 /**
  * Create a rounded rectangle shape for extrusion
- * Uses mathematical approach for precise corner arcs with configurable smoothness
+ * Supports individual corner radii: [topLeft, topRight, bottomRight, bottomLeft]
  */
 export function createRoundedRectangleShape(
   width: number,
   height: number,
-  radius: number,
+  radius: BorderRadius,
   smoothness: number
 ): THREE.Shape {
   // Clamp radius to prevent overlapping corners
   const maxRadius = Math.min(width / 2, height / 2)
-  const r = Math.min(radius, maxRadius)
+  const [rTL, rTR, rBR, rBL] = normalizeBorderRadius(radius, maxRadius)
 
-  // Helper constants
-  const wi = width / 2 - r // inner width
-  const hi = height / 2 - r // inner height
   const w2 = width / 2 // half width
   const h2 = height / 2 // half height
 
   const shape = new THREE.Shape()
 
-  // Start from bottom-left corner of the inner rectangle
-  shape.moveTo(-wi, -h2)
+  // Start from bottom-left corner (after the corner arc would end)
+  shape.moveTo(-w2 + rBL, -h2)
 
-  // Bottom edge
-  shape.lineTo(wi, -h2)
+  // Bottom edge (left to right)
+  shape.lineTo(w2 - rBR, -h2)
 
   // Bottom-right corner arc
-  if (r > 0) {
-    const centerX = wi
-    const centerY = -hi
-    // Create smooth arc manually using the smoothness parameter
-    createSmoothArc(shape, centerX, centerY, r, -Math.PI / 2, 0, smoothness)
-  }
-
-  // Right edge
-  shape.lineTo(w2, hi)
-
-  // Top-right corner arc
-  if (r > 0) {
-    const centerX = wi
-    const centerY = hi
-    createSmoothArc(shape, centerX, centerY, r, 0, Math.PI / 2, smoothness)
-  }
-
-  // Top edge
-  shape.lineTo(-wi, h2)
-
-  // Top-left corner arc
-  if (r > 0) {
-    const centerX = -wi
-    const centerY = hi
+  if (rBR > 0) {
     createSmoothArc(
       shape,
-      centerX,
-      centerY,
-      r,
+      w2 - rBR, // centerX
+      -h2 + rBR, // centerY
+      rBR,
+      -Math.PI / 2,
+      0,
+      smoothness
+    )
+  }
+
+  // Right edge (bottom to top)
+  shape.lineTo(w2, h2 - rTR)
+
+  // Top-right corner arc
+  if (rTR > 0) {
+    createSmoothArc(
+      shape,
+      w2 - rTR, // centerX
+      h2 - rTR, // centerY
+      rTR,
+      0,
+      Math.PI / 2,
+      smoothness
+    )
+  }
+
+  // Top edge (right to left)
+  shape.lineTo(-w2 + rTL, h2)
+
+  // Top-left corner arc
+  if (rTL > 0) {
+    createSmoothArc(
+      shape,
+      -w2 + rTL, // centerX
+      h2 - rTL, // centerY
+      rTL,
       Math.PI / 2,
       Math.PI,
       smoothness
     )
   }
 
-  // Left edge
-  shape.lineTo(-w2, -hi)
+  // Left edge (top to bottom)
+  shape.lineTo(-w2, -h2 + rBL)
 
   // Bottom-left corner arc
-  if (r > 0) {
-    const centerX = -wi
-    const centerY = -hi
+  if (rBL > 0) {
     createSmoothArc(
       shape,
-      centerX,
-      centerY,
-      r,
+      -w2 + rBL, // centerX
+      -h2 + rBL, // centerY
+      rBL,
       Math.PI,
       (3 * Math.PI) / 2,
       smoothness

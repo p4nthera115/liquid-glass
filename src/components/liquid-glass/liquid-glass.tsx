@@ -70,6 +70,10 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     whileActive,
     whileDisabled,
 
+    // Animation toggles
+    animateOnTap = true,
+    animateOnHover = true,
+
     // State
     active = false,
     disabled = false,
@@ -164,17 +168,23 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     }
 
     if (isPressed) {
-      return mergeAnimations(
-        baseAnimation,
-        whileTap || DEFAULT_ANIMATIONS.whileTap
-      )
+      // Only apply tap animation if animateOnTap is true or whileTap is explicitly provided
+      if (animateOnTap || whileTap) {
+        return mergeAnimations(
+          baseAnimation,
+          whileTap || (animateOnTap ? DEFAULT_ANIMATIONS.whileTap : {})
+        )
+      }
     }
 
     if (isHovered) {
-      return mergeAnimations(
-        baseAnimation,
-        whileHover || DEFAULT_ANIMATIONS.whileHover
-      )
+      // Only apply hover animation if animateOnHover is true or whileHover is explicitly provided
+      if (animateOnHover || whileHover) {
+        return mergeAnimations(
+          baseAnimation,
+          whileHover || (animateOnHover ? DEFAULT_ANIMATIONS.whileHover : {})
+        )
+      }
     }
 
     return baseAnimation
@@ -187,6 +197,8 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     whileTap,
     whileHover,
     whileActive,
+    animateOnTap,
+    animateOnHover,
   ])
 
   // Apply animation targets

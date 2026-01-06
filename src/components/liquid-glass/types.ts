@@ -1,10 +1,22 @@
 import * as THREE from "three"
 
+/**
+ * Border radius can be:
+ * - A single number (all corners same)
+ * - An array of 4 numbers: [topLeft, topRight, bottomRight, bottomLeft]
+ */
+export type BorderRadius = number | [number, number, number, number]
+
 export interface LiquidGlassProps {
   // Geometry
   width?: number
   height?: number
-  borderRadius?: number
+  /**
+   * Border radius for corners.
+   * - Single number: all corners same
+   * - Array [topLeft, topRight, bottomRight, bottomLeft]: individual corners
+   */
+  borderRadius?: BorderRadius
   borderSmoothness?: number
 
   // Transform
@@ -28,6 +40,20 @@ export interface LiquidGlassProps {
   whileTap?: AnimationValues
   whileActive?: AnimationValues
   whileDisabled?: AnimationValues
+
+  /**
+   * Enable/disable the default tap animation.
+   * When false, no animation plays on tap unless whileTap is explicitly provided.
+   * @default true
+   */
+  animateOnTap?: boolean
+
+  /**
+   * Enable/disable the default hover animation.
+   * When false, no animation plays on hover unless whileHover is explicitly provided.
+   * @default true
+   */
+  animateOnHover?: boolean
 
   // State
   active?: boolean
