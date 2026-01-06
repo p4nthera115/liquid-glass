@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import type { ExtrudeSettings } from "./types"
+import type { ExtrudeSettings, SpringConfig } from "./types"
 
 export const DEFAULT_POSITION: [number, number, number] = [0, 0, 0]
 export const DEFAULT_ROTATION: [number, number, number] = [0, 0, 0]
@@ -30,10 +30,21 @@ export const DEFAULT_PROPS = {
   // State
   visible: true,
 
-  // Animation
+  // Animation - default spring settings
   springStrength: 15,
   damping: 0.8,
   animationThreshold: 0.001,
+
+  // Per-animation-type spring configs (override defaults above)
+  positionSpring: {
+    strength: 15,
+    damping: 0.8,
+  } as SpringConfig,
+
+  rotationSpring: {
+    strength: 15,
+    damping: 0.8,
+  } as SpringConfig,
 
   // Extrude settings - optimized for performance (<150k triangles)
   extrudeSettings: {

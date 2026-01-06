@@ -11,7 +11,7 @@ import {
 import { MeshTransmissionMaterial } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 
-import type { LiquidGlassProps, AnimationValues } from "./types"
+import type { LiquidGlassProps, AnimationValues, SpringConfig } from "./types"
 import { DEFAULT_PROPS, DEFAULT_ANIMATIONS } from "./constants"
 import {
   parseColor,
@@ -36,10 +36,11 @@ import {
  *   position={[0, 0, 0]}
  *   rotation={[0, Math.PI / 4, 0]}
  *   whileHover={{ scale: 1.1 }}
- *   whileTap={{ width: 2.5 }} // Preserves border radius
+ *   whileTap={{ width: 2.5 }}
  * />
  * ```
  */
+
 const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
   const {
     // Geometry
@@ -91,6 +92,8 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     springStrength = DEFAULT_PROPS.springStrength,
     damping = DEFAULT_PROPS.damping,
     animationThreshold = DEFAULT_PROPS.animationThreshold,
+    positionSpring,
+    rotationSpring,
 
     // Geometry settings
     extrudeSettings = DEFAULT_PROPS.extrudeSettings,
@@ -151,6 +154,23 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     basePosition: [...position] as [number, number, number],
     baseRotation: [...rotation] as [number, number, number],
   })
+
+  // Resolve spring configs - merge user overrides with defaults
+  const resolvedPositionSpring = useMemo(
+    (): Required<SpringConfig> => ({
+      strength: positionSpring?.strength ?? springStrength,
+      damping: positionSpring?.damping ?? damping,
+    }),
+    [positionSpring, springStrength, damping]
+  )
+
+  const resolvedRotationSpring = useMemo(
+    (): Required<SpringConfig> => ({
+      strength: rotationSpring?.strength ?? springStrength,
+      damping: rotationSpring?.damping ?? damping,
+    }),
+    [rotationSpring, springStrength, damping]
+  )
 
   // Get current animation based on state with proper layering
   const getCurrentAnimation = useCallback((): AnimationValues => {
@@ -281,16 +301,18 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
   // Track if geometry needs to be updated
   const [geometryUpdateFlag, setGeometryUpdateFlag] = useState(0)
 
-  // Spring physics helper
+  // Spring physics helper - accepts optional spring config override
   const springStep = (
     current: number,
     target: number,
     velocity: number,
-    delta: number
+    delta: number,
+    strength: number = springStrength,
+    damp: number = damping
   ): [number, number, boolean] => {
     const displacement = target - current
-    const springForce = displacement * springStrength
-    const newVelocity = (velocity + springForce * delta) * damping
+    const springForce = displacement * strength
+    const newVelocity = (velocity + springForce * delta) * damp
     const newValue = current + newVelocity * delta * 50
 
     // Check if still animating
@@ -341,23 +363,27 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
       delta
     )
 
-    // Spring physics for position
+    // Spring physics for position (uses positionSpring config)
     for (let i = 0; i < 3; i++) {
       ;[state.currentPosition[i], state.positionVelocity[i]] = springStep(
         state.currentPosition[i],
         state.targetPosition[i],
         state.positionVelocity[i],
-        delta
+        delta,
+        resolvedPositionSpring.strength,
+        resolvedPositionSpring.damping
       )
     }
 
-    // Spring physics for rotation
+    // Spring physics for rotation (uses rotationSpring config)
     for (let i = 0; i < 3; i++) {
       ;[state.currentRotation[i], state.rotationVelocity[i]] = springStep(
         state.currentRotation[i],
         state.targetRotation[i],
         state.rotationVelocity[i],
-        delta
+        delta,
+        resolvedRotationSpring.strength,
+        resolvedRotationSpring.damping
       )
     }
 

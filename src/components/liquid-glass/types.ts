@@ -7,6 +7,17 @@ import * as THREE from "three"
  */
 export type BorderRadius = number | [number, number, number, number]
 
+/**
+ * Spring physics configuration for animations.
+ * Used to control the "feel" of different animation types independently.
+ */
+export interface SpringConfig {
+  /** How quickly the animation responds (higher = snappier). Default: 15 */
+  strength?: number
+  /** How quickly motion settles (0-1, higher = less bouncy). Default: 0.8 */
+  damping?: number
+}
+
 export interface LiquidGlassProps {
   // Geometry
   width?: number
@@ -69,9 +80,23 @@ export interface LiquidGlassProps {
   onTapEnd?: () => void
 
   // Spring animation settings
+  /** Default spring strength for all animations */
   springStrength?: number
+  /** Default damping for all animations */
   damping?: number
   animationThreshold?: number
+
+  /**
+   * Spring config specifically for position animations (x, y, z).
+   * Overrides springStrength/damping for position only.
+   */
+  positionSpring?: SpringConfig
+
+  /**
+   * Spring config specifically for rotation animations (rotateX, rotateY, rotateZ).
+   * Overrides springStrength/damping for rotation only.
+   */
+  rotationSpring?: SpringConfig
 
   // Geometry extrusion settings
   extrudeSettings?: ExtrudeSettings
@@ -128,4 +153,7 @@ export interface AnimationValues {
 
   // Opacity
   opacity?: number
+
+  // Border radius
+  borderRadius?: BorderRadius
 }

@@ -4,6 +4,7 @@ export type {
   AnimationValues,
   ExtrudeSettings,
   BorderRadius,
+  SpringConfig,
 } from "./types"
 
 export {
