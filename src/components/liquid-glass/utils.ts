@@ -151,3 +151,69 @@ export function parseColor(color: string | THREE.Color): THREE.Color {
   if (color instanceof THREE.Color) return color
   return new THREE.Color(color)
 }
+
+/**
+ * Lerp (linear interpolate) between two border radius values
+ * Handles both single number and array formats by normalizing to arrays
+ * Returns the interpolated array format
+ */
+export function lerpBorderRadius(
+  from: BorderRadius,
+  to: BorderRadius,
+  t: number
+): [number, number, number, number] {
+  // Normalize both to array format
+  const fromArr =
+    typeof from === "number" ? [from, from, from, from] : [...from]
+  const toArr = typeof to === "number" ? [to, to, to, to] : [...to]
+
+  return [
+    fromArr[0] + (toArr[0] - fromArr[0]) * t,
+    fromArr[1] + (toArr[1] - fromArr[1]) * t,
+    fromArr[2] + (toArr[2] - fromArr[2]) * t,
+    fromArr[3] + (toArr[3] - fromArr[3]) * t,
+  ]
+}
+
+/**
+ * Spring step for border radius - applies spring physics to each corner
+ * Returns [newValues, newVelocities, isAnimating]
+ */
+export function springStepBorderRadius(
+  current: [number, number, number, number],
+  target: [number, number, number, number],
+  velocity: [number, number, number, number],
+  delta: number,
+  strength: number,
+  damping: number,
+  threshold: number
+): [
+  [number, number, number, number],
+  [number, number, number, number],
+  boolean
+] {
+  let isAnimating = false
+  const newValues: [number, number, number, number] = [0, 0, 0, 0]
+  const newVelocities: [number, number, number, number] = [0, 0, 0, 0]
+
+  for (let i = 0; i < 4; i++) {
+    const displacement = target[i] - current[i]
+    const springForce = displacement * strength
+    const newVel = (velocity[i] + springForce * delta) * damping
+    const newVal = current[i] + newVel * delta * 50
+
+    const cornerAnimating =
+      Math.abs(displacement) > threshold || Math.abs(newVel) > threshold
+
+    if (cornerAnimating) {
+      isAnimating = true
+      newValues[i] = newVal
+      newVelocities[i] = newVel
+    } else {
+      newValues[i] = target[i]
+      newVelocities[i] = 0
+    }
+  }
+
+  return [newValues, newVelocities, isAnimating]
+}

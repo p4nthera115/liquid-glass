@@ -82,8 +82,8 @@ export default function HeroSection() {
           ior={2}
           chromaticAberration={0.03}
           thickness={0.8}
-          whileHover={{ scale: 1.05, rotateZ: 0.05 }}
-          whileTap={{ scale: 0.98, z: -0.1 }}
+          whileHover={{ scale: 1.05, borderRadius: 0.3 }}
+          whileTap={{ scale: 0.98, z: -0.1, borderRadius: 0.3 }}
           onClick={handleCenterClick}
           extrudeSettings={{
             depth: 0.01,

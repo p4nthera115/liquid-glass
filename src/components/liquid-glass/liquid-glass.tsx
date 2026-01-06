@@ -17,6 +17,8 @@ import {
   parseColor,
   createRoundedRectangleShape,
   mergeAnimations,
+  normalizeBorderRadius,
+  springStepBorderRadius,
 } from "./utils"
 
 /**
@@ -121,6 +123,12 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
   // Expose mesh ref to parent via forwardRef
   useImperativeHandle(ref, () => meshRef.current!, [])
 
+  // Normalize base border radius to array format for animation
+  const baseBorderRadiusArr = useMemo((): [number, number, number, number] => {
+    const maxRadius = Math.min(width / 2, height / 2)
+    return normalizeBorderRadius(borderRadius, maxRadius)
+  }, [borderRadius, width, height])
+
   // Animation state - uses width/height for geometry, scale for uniform scaling
   const animationState = useRef({
     // Current values
@@ -130,6 +138,12 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     currentPosition: [...position] as [number, number, number],
     currentRotation: [...rotation] as [number, number, number],
     currentOpacity: 1,
+    currentBorderRadius: [...baseBorderRadiusArr] as [
+      number,
+      number,
+      number,
+      number
+    ],
 
     // Target values
     targetWidth: width,
@@ -138,6 +152,12 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     targetPosition: [...position] as [number, number, number],
     targetRotation: [...rotation] as [number, number, number],
     targetOpacity: 1,
+    targetBorderRadius: [...baseBorderRadiusArr] as [
+      number,
+      number,
+      number,
+      number
+    ],
 
     // Velocities for spring physics
     widthVelocity: 0,
@@ -146,6 +166,7 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     positionVelocity: [0, 0, 0] as [number, number, number],
     rotationVelocity: [0, 0, 0] as [number, number, number],
     opacityVelocity: 0,
+    borderRadiusVelocity: [0, 0, 0, 0] as [number, number, number, number],
 
     // Base values for calculations
     baseWidth: width,
@@ -153,6 +174,12 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     baseScale: baseScale,
     basePosition: [...position] as [number, number, number],
     baseRotation: [...rotation] as [number, number, number],
+    baseBorderRadius: [...baseBorderRadiusArr] as [
+      number,
+      number,
+      number,
+      number
+    ],
   })
 
   // Resolve spring configs - merge user overrides with defaults
@@ -275,6 +302,18 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     ]
 
     state.targetOpacity = animation.opacity ?? 1
+
+    // Border radius targets - normalize to array format
+    if (animation.borderRadius !== undefined) {
+      const maxRadius = Math.min(targetWidth / 2, targetHeight / 2)
+      state.targetBorderRadius = normalizeBorderRadius(
+        animation.borderRadius,
+        maxRadius
+      )
+    } else {
+      // Reset to base border radius
+      state.targetBorderRadius = [...state.baseBorderRadius]
+    }
   }, [])
 
   // Update base values when props change
@@ -285,6 +324,7 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     state.baseWidth = width
     state.baseHeight = height
     state.baseScale = baseScale
+    state.baseBorderRadius = [...baseBorderRadiusArr]
 
     const currentAnimation = getCurrentAnimation()
     applyAnimation(currentAnimation)
@@ -296,6 +336,7 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     width,
     height,
     baseScale,
+    baseBorderRadiusArr,
   ])
 
   // Track if geometry needs to be updated
@@ -352,7 +393,24 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
       state.heightVelocity,
       delta
     )
-    if (heightAnimating)
+    if (heightAnimating) geometryNeedsUpdate = true
+
+    // Spring physics for border radius (triggers geometry update)
+    let borderRadiusAnimating: boolean
+    ;[
+      state.currentBorderRadius,
+      state.borderRadiusVelocity,
+      borderRadiusAnimating,
+    ] = springStepBorderRadius(
+      state.currentBorderRadius,
+      state.targetBorderRadius,
+      state.borderRadiusVelocity,
+      delta,
+      springStrength,
+      damping,
+      animationThreshold
+    )
+    if (borderRadiusAnimating)
       geometryNeedsUpdate = true
 
       // Spring physics for uniform scale (GPU transform)
@@ -414,19 +472,28 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     }
   })
 
-  // Create geometry - recreated when width/height animate to preserve border radius
+  // Create geometry - recreated when width/height/borderRadius animate
   const shape = useMemo(() => {
     const currentWidth = animationState.current?.currentWidth || width
     const currentHeight = animationState.current?.currentHeight || height
+    const currentBorderRadius =
+      animationState.current?.currentBorderRadius || baseBorderRadiusArr
 
     return createRoundedRectangleShape(
       currentWidth,
       currentHeight,
-      borderRadius,
+      currentBorderRadius,
       borderSmoothness
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, height, borderRadius, borderSmoothness, geometryUpdateFlag])
+  }, [
+    width,
+    height,
+    borderRadius,
+    borderSmoothness,
+    geometryUpdateFlag,
+    baseBorderRadiusArr,
+  ])
 
   // Merged extrude settings
   const mergedExtrudeSettings = useMemo(() => {
