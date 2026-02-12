@@ -6,17 +6,50 @@
   position: relative;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fc 50%, #f0f2f8 100%);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
     Roboto, sans-serif;
 }
 
-/* Canvas Container */
+/* Canvas Container - fixed so it stays visible while scrolling */
 .landing-canvas {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 1;
+}
+
+/* Scrollable content overlay - pointer-events pass through to the canvas,
+   re-enabled on interactive children (hints, info section) */
+.scroll-content {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hero-spacer {
+  height: 100vh;
+  pointer-events: none;
+  position: relative;
+}
+
+.hero-hints {
+  pointer-events: auto;
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.info-section {
+  min-height: 100vh;
+  position: relative;
+  pointer-events: auto;
 }
 
 /* Navigation */
@@ -187,7 +220,7 @@
 /* Subtle background pattern */
 .landing-page::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: radial-gradient(
       ellipse 80% 50% at 20% 40%,
