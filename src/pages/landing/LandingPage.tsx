@@ -36,8 +36,10 @@ export default function LandingPage() {
 
       {/* Interaction hints */}
       <div className="absolute bottom-6 gap-4 left-1/2 -translate-x-1/2 text-black z-10 justify-center items-center flex flex-col">
-        <pre className="text-center">npm install @liquid-glass/react</pre>
-        <div className="flex gap-2 font-semibold text-xs text-black/35 text-center justify-center items-center">
+        <div className="border border-black/30 rounded-md  px-6 py-2 text-black">
+          <pre>npm install @liquid-glass/react</pre>
+        </div>
+        <div className="flex gap-4 font-semibold text-xs text-black/35 text-center justify-center items-center">
           <span>Scroll</span>
           <span>Click centre panel</span>
         </div>
