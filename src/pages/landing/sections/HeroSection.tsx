@@ -82,8 +82,8 @@ export default function HeroSection() {
           ior={2}
           chromaticAberration={0.03}
           thickness={0.8}
-          whileHover={{ scale: 1.05, borderRadius: 0.3 }}
-          whileTap={{ scale: 0.98, z: -0.1, borderRadius: 0.3 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.98, z: -0.1 }}
           onClick={handleCenterClick}
           extrudeSettings={{
             depth: 0.01,
@@ -92,6 +92,7 @@ export default function HeroSection() {
             bevelSize: 0.03,
             bevelSegments: 20,
           }}
+          springStrength={7}
         />
       </Float>
 
@@ -125,8 +126,11 @@ export default function HeroSection() {
             bevelSegments: 6,
           }}
           positionSpring={{
-            strength: 5,
+            strength: 2,
             damping: 0.75,
+          }}
+          rotationSpring={{
+            strength: 1,
           }}
         />
       </Float>
@@ -156,8 +160,11 @@ export default function HeroSection() {
             bevelSegments: 20,
           }}
           positionSpring={{
-            strength: 5,
+            strength: 2,
             damping: 0.75,
+          }}
+          rotationSpring={{
+            strength: 1,
           }}
         />
       </Float>
@@ -192,8 +199,11 @@ export default function HeroSection() {
             bevelSegments: 5,
           }}
           positionSpring={{
-            strength: 5,
+            strength: 2,
             damping: 0.75,
+          }}
+          rotationSpring={{
+            strength: 1,
           }}
         />
       </Float>
@@ -223,8 +233,11 @@ export default function HeroSection() {
             bevelSegments: 20,
           }}
           positionSpring={{
-            strength: 5,
+            strength: 2,
             damping: 0.75,
+          }}
+          rotationSpring={{
+            strength: 1,
           }}
         />
       </Float>
