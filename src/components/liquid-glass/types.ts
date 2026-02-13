@@ -128,6 +128,27 @@ export interface ExtrudeSettings {
  * - `rotateX` / `rotateY` / `rotateZ` - Rotation animation (radians)
  * - `opacity` - Material opacity animation
  */
+/**
+ * Targets for the imperative setAnimationTargets API.
+ * Updates base + target values without triggering React re-renders.
+ */
+export interface AnimationTargetUpdate {
+  width?: number
+  height?: number
+  borderRadius?: BorderRadius
+  position?: [number, number, number]
+  rotation?: [number, number, number]
+  scale?: number
+}
+
+/**
+ * Imperative handle exposed via ref.
+ * Extends THREE.Mesh with methods for flicker-free animation control.
+ */
+export interface LiquidGlassHandle extends THREE.Mesh {
+  setAnimationTargets: (targets: AnimationTargetUpdate) => void
+}
+
 export interface AnimationValues {
   // Position
   x?: number

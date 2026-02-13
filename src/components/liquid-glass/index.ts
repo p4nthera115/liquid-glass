@@ -1,6 +1,8 @@
 export { default as LiquidGlass } from "./liquid-glass"
 export type {
   LiquidGlassProps,
+  LiquidGlassHandle,
+  AnimationTargetUpdate,
   AnimationValues,
   ExtrudeSettings,
   BorderRadius,

@@ -49,7 +49,6 @@
 .info-section {
   min-height: 100vh;
   position: relative;
-  pointer-events: auto;
 }
 
 /* Navigation */

@@ -1,8 +1,9 @@
-import { Float, Text } from "@react-three/drei"
+import { Float, MeshTransmissionMaterial, Text } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { LiquidGlass } from "../../../components/liquid-glass"
+import type { LiquidGlassHandle } from "../../../components/liquid-glass"
 import * as THREE from "three"
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useMemo } from "react"
 import type { ScrollState } from "../LandingPage"
 
 // Positions for the 4 surrounding panels (clockwise: top-left, top-right, bottom-right, bottom-left)
@@ -24,6 +25,18 @@ const PANEL_ROTATIONS: [number, number, number][] = [
 // Threshold at which surrounding panels unmount for performance
 const UNMOUNT_THRESHOLD = 1
 
+// Stable prop references for center panel to avoid re-triggering LiquidGlass useEffect on re-render
+const CENTER_POSITION: [number, number, number] = [0, 0, 0]
+const CENTER_WHILE_HOVER = { scale: 1.02 }
+const CENTER_WHILE_TAP = { scale: 0.98, z: -0.1 }
+const CENTER_EXTRUDE_SETTINGS = {
+  depth: 0.01,
+  bevelEnabled: true,
+  bevelThickness: 0.015,
+  bevelSize: 0.03,
+  bevelSegments: 20,
+}
+
 interface HeroSectionProps {
   scrollState: ScrollState
 }
@@ -33,8 +46,13 @@ export default function HeroSection({ scrollState }: HeroSectionProps) {
   const [showSurrounding, setShowSurrounding] = useState(true)
   const showSurroundingRef = useRef(true)
 
+  const centerRef = useRef<LiquidGlassHandle>(null)
   const centerGroupRef = useRef<THREE.Group>(null)
   const surroundingGroupRef = useRef<THREE.Group>(null)
+
+  // Stable Color reference — new THREE.Color() on every render causes
+  // MeshTransmissionMaterial to re-capture its FBO, producing flicker.
+  const centerColor = useMemo(() => new THREE.Color(2, 2, 2), [])
 
   const handleCenterClick = useCallback(() => {
     setPanelOffsets((prev) => prev.map((offset) => (offset + 1) % 4))
@@ -51,12 +69,32 @@ export default function HeroSection({ scrollState }: HeroSectionProps) {
   useFrame(() => {
     const progress = scrollState.progress
 
-    // Center panel slides to the left
+    // Center panel slides to the left starting at scroll 0.3
     if (centerGroupRef.current) {
+      const slideProgress = Math.max(0, (progress - 0.4) / 0.7)
       centerGroupRef.current.position.x = THREE.MathUtils.lerp(
         0,
-        -0.8,
-        progress
+        -1,
+        slideProgress
+      )
+    }
+
+    // Increase center panel height when scroll passes 0.7
+    if (centerRef.current) {
+      centerRef.current.setAnimationTargets(
+        progress >= 0.5
+          ? {
+              height: 1.8,
+              width: 1.5,
+              borderRadius: 0.2,
+              rotation: progress >= 0.9 ? [0, 0.5, 0] : [0, 0, 0],
+            }
+          : {
+              height: 1,
+              width: 1,
+              borderRadius: 0.5,
+              rotation: [0, 0, 0],
+            }
       )
     }
 
@@ -67,7 +105,7 @@ export default function HeroSection({ scrollState }: HeroSectionProps) {
         3,
         progress
       )
-      const scale = Math.max(1, 1)
+      const scale = Math.max(0.9, 1 - progress * 0.7)
       surroundingGroupRef.current.scale.setScalar(scale)
     }
 
@@ -106,29 +144,31 @@ export default function HeroSection({ scrollState }: HeroSectionProps) {
           floatingRange={[-0.1, 0.1]}
         >
           <LiquidGlass
-            width={1}
-            height={1}
-            borderRadius={1}
+            ref={centerRef}
             borderSmoothness={20}
-            position={[0, 0.2, 0]}
-            color={new THREE.Color(2, 2, 2)}
+            position={CENTER_POSITION}
+            color={centerColor}
             transmission={1}
             roughness={0}
             ior={2}
             chromaticAberration={0.03}
             thickness={0.8}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98, z: -0.1 }}
+            whileHover={CENTER_WHILE_HOVER}
+            whileTap={CENTER_WHILE_TAP}
             onClick={handleCenterClick}
-            extrudeSettings={{
-              depth: 0.01,
-              bevelEnabled: true,
-              bevelThickness: 0.015,
-              bevelSize: 0.03,
-              bevelSegments: 20,
-            }}
-            springStrength={7}
-          />
+            extrudeSettings={CENTER_EXTRUDE_SETTINGS}
+            springStrength={3}
+            damping={0.7}
+          >
+            <MeshTransmissionMaterial
+              transmission={1}
+              roughness={0}
+              ior={2}
+              chromaticAberration={0.03}
+              thickness={0.8}
+              color={centerColor}
+            />
+          </LiquidGlass>
         </Float>
       </group>
 

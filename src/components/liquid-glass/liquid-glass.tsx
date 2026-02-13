@@ -11,7 +11,13 @@ import {
 import { MeshTransmissionMaterial } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 
-import type { LiquidGlassProps, AnimationValues, SpringConfig } from "./types"
+import type {
+  LiquidGlassProps,
+  LiquidGlassHandle,
+  AnimationTargetUpdate,
+  AnimationValues,
+  SpringConfig,
+} from "./types"
 import { DEFAULT_PROPS, DEFAULT_ANIMATIONS } from "./constants"
 import {
   parseColor,
@@ -43,7 +49,7 @@ import {
  * ```
  */
 
-const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
+const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref) => {
   const {
     // Geometry
     width = DEFAULT_PROPS.width,
@@ -120,8 +126,49 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
   const [isHovered, setIsHovered] = useState(false)
   const [isPressed, setIsPressed] = useState(false)
 
-  // Expose mesh ref to parent via forwardRef
-  useImperativeHandle(ref, () => meshRef.current!, [])
+  // Expose mesh ref + imperative API to parent via forwardRef
+  useImperativeHandle(
+    ref,
+    () =>
+      Object.assign(meshRef.current!, {
+        setAnimationTargets: (targets: AnimationTargetUpdate) => {
+          const state = animationState.current
+          if (targets.width !== undefined) {
+            state.baseWidth = targets.width
+            state.targetWidth = targets.width
+          }
+          if (targets.height !== undefined) {
+            state.baseHeight = targets.height
+            state.targetHeight = targets.height
+          }
+          if (targets.scale !== undefined) {
+            state.baseScale = targets.scale
+            state.targetScale = targets.scale
+          }
+          if (targets.position !== undefined) {
+            state.basePosition = [...targets.position]
+            state.targetPosition = [...targets.position]
+          }
+          if (targets.rotation !== undefined) {
+            state.baseRotation = [...targets.rotation]
+            state.targetRotation = [...targets.rotation]
+          }
+          if (targets.borderRadius !== undefined) {
+            const maxRadius = Math.min(
+              state.targetWidth / 2,
+              state.targetHeight / 2
+            )
+            const normalized = normalizeBorderRadius(
+              targets.borderRadius,
+              maxRadius
+            )
+            state.baseBorderRadius = [...normalized]
+            state.targetBorderRadius = [...normalized]
+          }
+        },
+      }),
+    []
+  )
 
   // Normalize base border radius to array format for animation
   const baseBorderRadiusArr = useMemo((): [number, number, number, number] => {
@@ -339,9 +386,6 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
     baseBorderRadiusArr,
   ])
 
-  // Track if geometry needs to be updated
-  const [geometryUpdateFlag, setGeometryUpdateFlag] = useState(0)
-
   // Spring physics helper - accepts optional spring config override
   const springStep = (
     current: number,
@@ -466,9 +510,20 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
         state.currentOpacity < 1
     }
 
-    // Trigger geometry update if width/height changed
+    // Update geometry imperatively (no React re-render)
     if (geometryNeedsUpdate) {
-      setGeometryUpdateFlag((prev) => prev + 1)
+      const newShape = createRoundedRectangleShape(
+        state.currentWidth,
+        state.currentHeight,
+        state.currentBorderRadius,
+        borderSmoothness
+      )
+      const oldGeo = meshRef.current.geometry
+      meshRef.current.geometry = new THREE.ExtrudeGeometry(
+        newShape,
+        mergedExtrudeSettings
+      )
+      oldGeo.dispose()
     }
   })
 
@@ -486,14 +541,7 @@ const LiquidGlass = forwardRef<THREE.Mesh, LiquidGlassProps>((props, ref) => {
       borderSmoothness
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    width,
-    height,
-    borderRadius,
-    borderSmoothness,
-    geometryUpdateFlag,
-    baseBorderRadiusArr,
-  ])
+  }, [width, height, borderRadius, borderSmoothness, baseBorderRadiusArr])
 
   // Merged extrude settings
   const mergedExtrudeSettings = useMemo(() => {
