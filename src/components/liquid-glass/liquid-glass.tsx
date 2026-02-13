@@ -363,7 +363,8 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     }
   }, [])
 
-  // Update base values when props change
+  // Update base values when PROPS change (not on hover/press state changes,
+  // which would overwrite imperative values set by setAnimationTargets)
   useEffect(() => {
     const state = animationState.current
     state.basePosition = [...position]
@@ -372,19 +373,13 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     state.baseHeight = height
     state.baseScale = baseScale
     state.baseBorderRadius = [...baseBorderRadiusArr]
+  }, [position, rotation, width, height, baseScale, baseBorderRadiusArr])
 
+  // Re-apply animation when interaction state or props change
+  useEffect(() => {
     const currentAnimation = getCurrentAnimation()
     applyAnimation(currentAnimation)
-  }, [
-    getCurrentAnimation,
-    applyAnimation,
-    position,
-    rotation,
-    width,
-    height,
-    baseScale,
-    baseBorderRadiusArr,
-  ])
+  }, [getCurrentAnimation, applyAnimation, position, rotation, width, height, baseScale, baseBorderRadiusArr])
 
   // Spring physics helper - accepts optional spring config override
   const springStep = (

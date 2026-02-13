@@ -5,6 +5,7 @@ import type { LiquidGlassHandle } from "../../../components/liquid-glass"
 import * as THREE from "three"
 import { useState, useCallback, useRef, useMemo } from "react"
 import type { ScrollState } from "../LandingPage"
+import type { PanelProps } from "./panel-types"
 
 // Positions for the 4 surrounding panels (clockwise: top-left, top-right, bottom-right, bottom-left)
 const PANEL_POSITIONS: [number, number, number][] = [
@@ -27,7 +28,7 @@ const UNMOUNT_THRESHOLD = 1
 
 // Stable prop references for center panel to avoid re-triggering LiquidGlass useEffect on re-render
 const CENTER_POSITION: [number, number, number] = [0, 0, 0]
-const CENTER_WHILE_HOVER = { scale: 1.02 }
+const CENTER_WHILE_HOVER = { scale: 1.05 }
 const CENTER_WHILE_TAP = { scale: 0.98, z: -0.1 }
 const CENTER_EXTRUDE_SETTINGS = {
   depth: 0.01,
@@ -39,9 +40,13 @@ const CENTER_EXTRUDE_SETTINGS = {
 
 interface HeroSectionProps {
   scrollState: ScrollState
+  panelProps: PanelProps
 }
 
-export default function HeroSection({ scrollState }: HeroSectionProps) {
+export default function HeroSection({
+  scrollState,
+  panelProps,
+}: HeroSectionProps) {
   const [panelOffsets, setPanelOffsets] = useState([0, 1, 2, 3])
   const [showSurrounding, setShowSurrounding] = useState(true)
   const showSurroundingRef = useRef(true)
@@ -52,7 +57,12 @@ export default function HeroSection({ scrollState }: HeroSectionProps) {
 
   // Stable Color reference — new THREE.Color() on every render causes
   // MeshTransmissionMaterial to re-capture its FBO, producing flicker.
-  const centerColor = useMemo(() => new THREE.Color(2, 2, 2), [])
+  const centerColor = useMemo(() => {
+    const c = new THREE.Color(panelProps.color)
+    // Boost to HDR range for glass luminance
+    c.multiplyScalar(2)
+    return c
+  }, [panelProps.color])
 
   const handleCenterClick = useCallback(() => {
     setPanelOffsets((prev) => prev.map((offset) => (offset + 1) % 4))
@@ -74,19 +84,19 @@ export default function HeroSection({ scrollState }: HeroSectionProps) {
       const slideProgress = Math.max(0, (progress - 0.4) / 0.7)
       centerGroupRef.current.position.x = THREE.MathUtils.lerp(
         0,
-        -1,
+        -1.2,
         slideProgress
       )
     }
 
-    // Increase center panel height when scroll passes 0.7
+    // Showcase state uses control-panel geometry; hero state is always a circle
     if (centerRef.current) {
       centerRef.current.setAnimationTargets(
         progress >= 0.5
           ? {
-              height: 1.8,
-              width: 1.5,
-              borderRadius: 0.2,
+              height: panelProps.height,
+              width: panelProps.width,
+              borderRadius: panelProps.borderRadius,
               rotation: progress >= 0.9 ? [0, 0.5, 0] : [0, 0, 0],
             }
           : {
@@ -148,11 +158,12 @@ export default function HeroSection({ scrollState }: HeroSectionProps) {
             borderSmoothness={20}
             position={CENTER_POSITION}
             color={centerColor}
-            transmission={1}
-            roughness={0}
-            ior={2}
-            chromaticAberration={0.03}
-            thickness={0.8}
+            transmission={panelProps.transmission}
+            roughness={panelProps.roughness}
+            ior={panelProps.ior}
+            chromaticAberration={panelProps.chromaticAberration}
+            thickness={panelProps.thickness}
+            anisotropicBlur={panelProps.anisotropicBlur}
             whileHover={CENTER_WHILE_HOVER}
             whileTap={CENTER_WHILE_TAP}
             onClick={handleCenterClick}
@@ -161,11 +172,12 @@ export default function HeroSection({ scrollState }: HeroSectionProps) {
             damping={0.7}
           >
             <MeshTransmissionMaterial
-              transmission={1}
-              roughness={0}
-              ior={2}
-              chromaticAberration={0.03}
-              thickness={0.8}
+              transmission={panelProps.transmission}
+              roughness={panelProps.roughness}
+              ior={panelProps.ior}
+              chromaticAberration={panelProps.chromaticAberration}
+              thickness={panelProps.thickness}
+              anisotropicBlur={panelProps.anisotropicBlur}
               color={centerColor}
             />
           </LiquidGlass>

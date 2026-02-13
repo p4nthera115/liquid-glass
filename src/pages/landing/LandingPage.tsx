@@ -1,8 +1,11 @@
-import { Suspense, useEffect, useMemo, useRef } from "react"
+import { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { Canvas, extend } from "@react-three/fiber"
 import { PerspectiveCamera, OrbitControls } from "@react-three/drei"
-import { Perf } from "r3f-perf"
+// import { Perf } from "r3f-perf"
 import HeroSection from "./sections/HeroSection"
+import ControlPanel from "./sections/ControlPanel"
+import { DEFAULT_PANEL_PROPS } from "./sections/panel-types"
+import type { PanelProps } from "./sections/panel-types"
 import "./landing.css"
 import { geometry } from "maath"
 
@@ -13,6 +16,8 @@ export type ScrollState = { progress: number }
 export default function LandingPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const scrollState = useMemo<ScrollState>(() => ({ progress: 0 }), [])
+  const [panelProps, setPanelProps] = useState<PanelProps>(DEFAULT_PANEL_PROPS)
+  const [controlsVisible, setControlsVisible] = useState(false)
 
   useEffect(() => {
     const el = scrollRef.current
@@ -21,6 +26,7 @@ export default function LandingPage() {
     const handleScroll = () => {
       const maxScroll = el.scrollHeight - el.clientHeight
       scrollState.progress = maxScroll > 0 ? el.scrollTop / maxScroll : 0
+      setControlsVisible(scrollState.progress > 0.95)
     }
 
     // scroll-content has pointer-events: none so R3F panels stay interactive.
@@ -47,7 +53,7 @@ export default function LandingPage() {
           <color attach="background" args={["fff"]} />
 
           <PerspectiveCamera makeDefault position={[0, 0, 2.7]} fov={50} />
-          <Perf position="bottom-left" />
+          {/* <Perf position="bottom-left" /> */}
 
           <Suspense fallback={null}>
             <OrbitControls
@@ -60,9 +66,15 @@ export default function LandingPage() {
               maxPolarAngle={Math.PI / 1.5}
             />
           </Suspense>
-          <HeroSection scrollState={scrollState} />
+          <HeroSection scrollState={scrollState} panelProps={panelProps} />
         </Canvas>
       </div>
+
+      <ControlPanel
+        panelProps={panelProps}
+        onChange={setPanelProps}
+        visible={controlsVisible}
+      />
 
       {/* Scrollable content overlay */}
       <div className="scroll-content">
@@ -80,9 +92,7 @@ export default function LandingPage() {
         </section>
 
         {/* Info section - content placeholder */}
-        <section className="info-section">
-          {/* Content will go here */}
-        </section>
+        <section className="info-section">{/* Content will go here */}</section>
       </div>
     </div>
   )
