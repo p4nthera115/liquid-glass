@@ -50,6 +50,7 @@ export default function LandingPage() {
       {/* 3D Canvas - fixed in viewport */}
       <div className="landing-canvas">
         <Canvas gl={{ antialias: true, alpha: true }}>
+          {/* <OrbitControls /> */}
           <color attach="background" args={["fff"]} />
 
           <PerspectiveCamera makeDefault position={[0, 0, 2.7]} fov={50} />

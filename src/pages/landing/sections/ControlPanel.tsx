@@ -117,7 +117,7 @@ export default function ControlPanel({
           label="Chromatic Aberration"
           value={panelProps.chromaticAberration}
           min={0}
-          max={0.2}
+          max={1.0}
           step={0.001}
           onChange={(v) => update("chromaticAberration", v)}
         />
@@ -125,7 +125,7 @@ export default function ControlPanel({
           label="Thickness"
           value={panelProps.thickness}
           min={0}
-          max={2}
+          max={5}
           step={0.01}
           onChange={(v) => update("thickness", v)}
         />
@@ -145,7 +145,7 @@ export default function ControlPanel({
           label="Width"
           value={panelProps.width}
           min={0.5}
-          max={3}
+          max={1.5}
           step={0.01}
           onChange={(v) => update("width", v)}
         />
@@ -153,7 +153,7 @@ export default function ControlPanel({
           label="Height"
           value={panelProps.height}
           min={0.5}
-          max={3}
+          max={2}
           step={0.01}
           onChange={(v) => update("height", v)}
         />
@@ -161,7 +161,7 @@ export default function ControlPanel({
           label="Border Radius"
           value={panelProps.borderRadius}
           min={0}
-          max={0.5}
+          max={1}
           step={0.01}
           onChange={(v) => update("borderRadius", v)}
         />

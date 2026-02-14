@@ -19,7 +19,7 @@ export const DEFAULT_PANEL_PROPS: PanelProps = {
   chromaticAberration: 0.03,
   thickness: 0.8,
   anisotropicBlur: 0,
-  borderRadius: 0.2,
+  borderRadius: 0.35,
   width: 1.5,
   height: 1.8,
 }

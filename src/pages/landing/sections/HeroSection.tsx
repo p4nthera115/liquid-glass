@@ -1,11 +1,13 @@
 import { Float, MeshTransmissionMaterial, Text } from "@react-three/drei"
-import { useFrame } from "@react-three/fiber"
+import { useFrame, useThree } from "@react-three/fiber"
 import { LiquidGlass } from "../../../components/liquid-glass"
 import type { LiquidGlassHandle } from "../../../components/liquid-glass"
 import * as THREE from "three"
 import { useState, useCallback, useRef, useMemo } from "react"
 import type { ScrollState } from "../LandingPage"
 import type { PanelProps } from "./panel-types"
+// import RefractionGrid from "./RefractionGrid"
+import BackgroundShader from "./BackgroundShader"
 
 // Positions for the 4 surrounding panels (clockwise: top-left, top-right, bottom-right, bottom-left)
 const PANEL_POSITIONS: [number, number, number][] = [
@@ -55,6 +57,10 @@ export default function HeroSection({
   const centerGroupRef = useRef<THREE.Group>(null)
   const surroundingGroupRef = useRef<THREE.Group>(null)
 
+  const scene = useThree((s) => s.scene)
+  const bgColorStart = useMemo(() => new THREE.Color("#ffffff"), [])
+  const bgColorEnd = useMemo(() => new THREE.Color("#74669a"), [])
+
   // Stable Color reference — new THREE.Color() on every render causes
   // MeshTransmissionMaterial to re-capture its FBO, producing flicker.
   const centerColor = useMemo(() => {
@@ -97,7 +103,7 @@ export default function HeroSection({
               height: panelProps.height,
               width: panelProps.width,
               borderRadius: panelProps.borderRadius,
-              rotation: progress >= 0.9 ? [0, 0.5, 0] : [0, 0, 0],
+              // rotation: progress >= 0.9 ? [0, 0.5, 0] : [0, 0, 0],
             }
           : {
               height: 1,
@@ -125,6 +131,10 @@ export default function HeroSection({
       showSurroundingRef.current = shouldShow
       setShowSurrounding(shouldShow)
     }
+
+    // Transition background color toward control center section
+    const bgT = Math.max(0, Math.min(1, (progress - 0.7) / 0.25))
+    ;(scene.background as THREE.Color).copy(bgColorStart).lerp(bgColorEnd, bgT)
   })
 
   return (
@@ -144,6 +154,10 @@ export default function HeroSection({
       <ambientLight intensity={0.6} />
       <pointLight position={[2, 2, 3]} intensity={1.5} color="#ec4899" />
       <pointLight position={[-2, -1, 2]} intensity={1} color="#667eea" />
+
+      {/* Grid pattern behind glass for refraction */}
+      {/* <RefractionGrid scrollState={scrollState} /> */}
+      <BackgroundShader scrollState={scrollState} />
 
       {/* Center panel group - slides left on scroll */}
       <group ref={centerGroupRef}>
