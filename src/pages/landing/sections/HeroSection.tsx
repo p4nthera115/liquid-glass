@@ -53,6 +53,8 @@ export default function HeroSection({
   const [panelOffsets, setPanelOffsets] = useState([0, 1, 2, 3])
   const [showSurrounding, setShowSurrounding] = useState(true)
   const showSurroundingRef = useRef(true)
+  const [heroActive, setHeroActive] = useState(true)
+  const heroActiveRef = useRef(true)
   const [entryOffsets, setEntryOffsets] = useState([3, 3, 3, 3])
 
   const centerRef = useRef<LiquidGlassHandle>(null)
@@ -95,8 +97,9 @@ export default function HeroSection({
   }, [panelProps.color])
 
   const handleCenterClick = useCallback(() => {
+    if (scrollState.progress > 0.95) return
     setPanelOffsets((prev) => prev.map((offset) => (offset + 1) % 4))
-  }, [])
+  }, [scrollState])
 
   const getPosition = (panelIndex: number): [number, number, number] => {
     const pos = PANEL_POSITIONS[panelOffsets[panelIndex]]
@@ -156,6 +159,13 @@ export default function HeroSection({
       setShowSurrounding(shouldShow)
     }
 
+    // Disable center panel interaction in control panel section
+    const shouldBeActive = progress <= 0.95
+    if (shouldBeActive !== heroActiveRef.current) {
+      heroActiveRef.current = shouldBeActive
+      setHeroActive(shouldBeActive)
+    }
+
     // Fade in text opacity using elapsed time for smooth interpolation
     if (textRef.current) {
       if (textFadeStart.current < 0)
@@ -205,9 +215,10 @@ export default function HeroSection({
             chromaticAberration={panelProps.chromaticAberration}
             thickness={panelProps.thickness}
             anisotropicBlur={panelProps.anisotropicBlur}
-            whileHover={CENTER_WHILE_HOVER}
-            whileTap={CENTER_WHILE_TAP}
-            onClick={handleCenterClick}
+            whileHover={heroActive ? CENTER_WHILE_HOVER : undefined}
+            whileTap={heroActive ? CENTER_WHILE_TAP : undefined}
+            tapEffect={heroActive}
+            onClick={heroActive ? handleCenterClick : undefined}
             extrudeSettings={CENTER_EXTRUDE_SETTINGS}
             springStrength={4}
             damping={0.8}

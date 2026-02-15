@@ -27,10 +27,6 @@ export default function HeroSection() {
         Liquid
         <meshStandardMaterial color="#000" />
       </Text>
-      {/* <Text fontSize={1} position={[0, -0.8, -0.8]}>
-        Glass
-        <meshStandardMaterial color="#000" />
-      </Text> */}
 
       {/* Central hero glass panel - optimized */}
       <Float
@@ -71,7 +67,6 @@ export default function HeroSection() {
         floatingRange={[-0.05, 0.05]}
       >
         <LiquidGlass
-          // rotation={[-0.2, -0.5, 0]}
           width={0.45}
           height={0.45}
           borderRadius={0.5}
@@ -103,7 +98,6 @@ export default function HeroSection() {
         floatingRange={[-0.08, 0.08]}
       >
         <LiquidGlass
-          // rotation={[0.2, 0.5, 0]}
           width={0.35}
           height={0.7}
           borderRadius={0.15}
@@ -130,7 +124,6 @@ export default function HeroSection() {
       {/* Small floating orb */}
       <Float speed={3} floatIntensity={0.6}>
         <LiquidGlass
-          // rotation={[0.2, -0.5, 0]}
           width={0.3}
           height={0.18}
           borderRadius={0.5}
@@ -155,7 +148,6 @@ export default function HeroSection() {
 
       <Float speed={2.5} floatIntensity={0.5}>
         <LiquidGlass
-          // rotation={[-0.4, 0.5, 0]}
           width={0.3}
           height={0.3}
           borderRadius={0.1}
