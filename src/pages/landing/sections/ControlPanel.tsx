@@ -1,5 +1,4 @@
-import { MATERIAL_PRESETS } from "../../../components/liquid-glass/constants"
-import type { MaterialPreset } from "../../../components/liquid-glass/constants"
+import { DEFAULT_PANEL_PROPS } from "./panel-types"
 import type { PanelProps } from "./panel-types"
 
 interface SliderRowProps {
@@ -45,35 +44,19 @@ export default function ControlPanel({
     onChange({ ...panelProps, [key]: value })
   }
 
-  const applyPreset = (preset: MaterialPreset) => {
-    const values = MATERIAL_PRESETS[preset]
-    onChange({
-      ...panelProps,
-      transmission: values.transmission,
-      roughness: values.roughness,
-      ior: values.ior,
-      chromaticAberration: values.chromaticAberration,
-      thickness: values.thickness,
-      anisotropicBlur: "anisotropicBlur" in values ? values.anisotropicBlur : 0,
-    })
-  }
-
   return (
     <div className={`control-panel ${visible ? "visible" : ""}`}>
-      <div className="control-panel-header">Customize</div>
-
-      <div className="control-presets">
-        {(Object.keys(MATERIAL_PRESETS) as MaterialPreset[]).map((preset) => (
-          <button
-            key={preset}
-            className="preset-button"
-            onClick={() => applyPreset(preset)}
-          >
-            {preset}
-          </button>
-        ))}
+      <div className="control-panel-header">
+        <span>Customize</span>
+        <button
+          className="reset-button"
+          onClick={() => onChange(DEFAULT_PANEL_PROPS)}
+        >
+          Reset
+        </button>
       </div>
-      <div className="control-section">
+
+      <div className="control-section mt-12">
         <div className="control-section-label">Geometry</div>
         <SliderRow
           label="Width"

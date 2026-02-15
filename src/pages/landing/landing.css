@@ -279,11 +279,31 @@
 }
 
 .control-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 1rem;
   font-weight: 600;
   color: #1a1a2e;
   margin-bottom: 0.75rem;
   letter-spacing: -0.02em;
+}
+
+.reset-button {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #666;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.reset-button:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #1a1a2e;
 }
 
 .control-presets {
