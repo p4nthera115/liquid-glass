@@ -73,6 +73,33 @@ export default function ControlPanel({
           </button>
         ))}
       </div>
+      <div className="control-section">
+        <div className="control-section-label">Geometry</div>
+        <SliderRow
+          label="Width"
+          value={panelProps.width}
+          min={0.5}
+          max={1.5}
+          step={0.01}
+          onChange={(v) => update("width", v)}
+        />
+        <SliderRow
+          label="Height"
+          value={panelProps.height}
+          min={0.5}
+          max={2}
+          step={0.01}
+          onChange={(v) => update("height", v)}
+        />
+        <SliderRow
+          label="Border Radius"
+          value={panelProps.borderRadius}
+          min={0}
+          max={1}
+          step={0.01}
+          onChange={(v) => update("borderRadius", v)}
+        />
+      </div>
 
       <div className="control-section">
         <div className="control-section-label">Material</div>
@@ -101,9 +128,17 @@ export default function ControlPanel({
           label="Roughness"
           value={panelProps.roughness}
           min={0}
-          max={1}
+          max={0.5}
           step={0.01}
           onChange={(v) => update("roughness", v)}
+        />
+        <SliderRow
+          label="Thickness"
+          value={panelProps.thickness}
+          min={0}
+          max={5}
+          step={0.01}
+          onChange={(v) => update("thickness", v)}
         />
         <SliderRow
           label="IOR"
@@ -117,53 +152,17 @@ export default function ControlPanel({
           label="Chromatic Aberration"
           value={panelProps.chromaticAberration}
           min={0}
-          max={1.0}
+          max={10}
           step={0.001}
           onChange={(v) => update("chromaticAberration", v)}
-        />
-        <SliderRow
-          label="Thickness"
-          value={panelProps.thickness}
-          min={0}
-          max={5}
-          step={0.01}
-          onChange={(v) => update("thickness", v)}
         />
         <SliderRow
           label="Anisotropic Blur"
           value={panelProps.anisotropicBlur}
           min={0}
-          max={1}
+          max={10}
           step={0.01}
           onChange={(v) => update("anisotropicBlur", v)}
-        />
-      </div>
-
-      <div className="control-section">
-        <div className="control-section-label">Geometry</div>
-        <SliderRow
-          label="Width"
-          value={panelProps.width}
-          min={0.5}
-          max={1.5}
-          step={0.01}
-          onChange={(v) => update("width", v)}
-        />
-        <SliderRow
-          label="Height"
-          value={panelProps.height}
-          min={0.5}
-          max={2}
-          step={0.01}
-          onChange={(v) => update("height", v)}
-        />
-        <SliderRow
-          label="Border Radius"
-          value={panelProps.borderRadius}
-          min={0}
-          max={1}
-          step={0.01}
-          onChange={(v) => update("borderRadius", v)}
         />
       </div>
     </div>

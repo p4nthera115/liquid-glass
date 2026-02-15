@@ -79,9 +79,18 @@ const fragmentShader = /* glsl */ `
   uniform float uHeight;
   uniform float uBorderRadius;
   uniform vec2 uPlaneSize;
+  uniform float uTime;
+  uniform float uHueSpeed;
 
   varying vec2 vUv;
   varying float vElevation;
+
+  // Hue rotation (Rodrigues' formula – rotates RGB around (1,1,1) axis)
+  vec3 hueShift(vec3 color, float angle) {
+    const vec3 k = vec3(0.57735, 0.57735, 0.57735);
+    float cosA = cos(angle);
+    return color * cosA + cross(k, color) * sin(angle) + k * dot(k, color) * (1.0 - cosA);
+  }
 
   // Rounded box SDF (Inigo Quilez)
   float roundedBoxSDF(vec2 p, vec2 b, float r) {
@@ -97,6 +106,9 @@ const fragmentShader = /* glsl */ `
     vec3 color = mix(uColor1, uColor2, smoothstep(0.0, 0.33, h));
     color = mix(color, uColor3, smoothstep(0.33, 0.66, h));
     color = mix(color, uColor4, smoothstep(0.66, 1.0, h));
+
+    // Rotate hue over time
+    color = hueShift(color, uTime * uHueSpeed);
 
     // Darken valleys further based on how low the wave is
     float brightness = mix(0.3, 1.0, h);
@@ -151,13 +163,14 @@ export default function RefractionGrid({
   const [controls, set] = useControls("Background Shader", () => ({
     positionX: { value: -0.4, min: -5, max: 5, step: 0.01 },
     positionY: { value: 0, min: -5, max: 5, step: 0.01 },
-    positionZ: { value: -1, min: -5, max: 5, step: 0.01 },
+    positionZ: { value: -1.2, min: -5, max: 5, step: 0.01 },
     width: { value: width, min: 0.1, max: 100, step: 0.01 },
     height: { value: height, min: 0.1, max: 4, step: 0.01 },
     borderRadius: { value: borderRadius, min: 0, max: 1, step: 0.01 },
     amplitude: { value: amplitude, min: 0, max: 2, step: 0.01 },
     frequency: { value: frequency, min: 0, max: 5, step: 0.01 },
     speed: { value: speed, min: 0, max: 3, step: 0.01 },
+    hueSpeed: { value: 0.1, min: 0, max: 1, step: 0.01 },
     color1: { value: color1 },
     color2: { value: color2 },
     color3: { value: color3 },
@@ -199,6 +212,7 @@ export default function RefractionGrid({
       uAmplitude: { value: controls.amplitude },
       uFrequency: { value: controls.frequency },
       uSpeed: { value: controls.speed },
+      uHueSpeed: { value: controls.hueSpeed },
       uColor1: { value: new THREE.Color(controls.color1) },
       uColor2: { value: new THREE.Color(controls.color2) },
       uColor3: { value: new THREE.Color(controls.color3) },
@@ -240,6 +254,7 @@ export default function RefractionGrid({
     mat.uniforms.uAmplitude.value = controls.amplitude
     mat.uniforms.uFrequency.value = controls.frequency
     mat.uniforms.uSpeed.value = controls.speed
+    mat.uniforms.uHueSpeed.value = controls.hueSpeed
     mat.uniforms.uPlaneSize.value.set(
       controls.width + PLANE_PADDING,
       controls.height + PLANE_PADDING
@@ -260,8 +275,8 @@ export default function RefractionGrid({
         args={[
           controls.width + PLANE_PADDING,
           controls.height + PLANE_PADDING,
-          1024,
-          1024,
+          250,
+          250,
         ]}
       />
       <shaderMaterial

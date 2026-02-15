@@ -13,8 +13,8 @@ import BackgroundShader from "./BackgroundShader"
 const PANEL_POSITIONS: [number, number, number][] = [
   [-1.2, 0.5, -0.3], // Top left
   [1.1, 0.7, 0.2], // Top right
-  [1, -0.2, -0.2], // Bottom right
-  [-0.8, -0.4, 0.3], // Bottom left
+  [1.2, -0.2, -0.2], // Bottom right
+  [-0.9, -0.4, 0.3], // Bottom left
 ]
 
 // Rotations for each position
@@ -36,8 +36,8 @@ const CENTER_EXTRUDE_SETTINGS = {
   depth: 0.01,
   bevelEnabled: true,
   bevelThickness: 0.015,
-  bevelSize: 0.03,
-  bevelSegments: 20,
+  bevelSize: 0.1,
+  bevelSegments: 40,
 }
 
 interface HeroSectionProps {
@@ -60,6 +60,11 @@ export default function HeroSection({
   const scene = useThree((s) => s.scene)
   const bgColorStart = useMemo(() => new THREE.Color("#ffffff"), [])
   const bgColorEnd = useMemo(() => new THREE.Color("#74669a"), [])
+  const bgBaseHSL = useMemo(() => {
+    const hsl = { h: 0, s: 0, l: 0 }
+    new THREE.Color("#74669a").getHSL(hsl)
+    return hsl
+  }, [])
 
   // Stable Color reference — new THREE.Color() on every render causes
   // MeshTransmissionMaterial to re-capture its FBO, producing flicker.
@@ -82,7 +87,7 @@ export default function HeroSection({
     return PANEL_ROTATIONS[panelOffsets[panelIndex]]
   }
 
-  useFrame(() => {
+  useFrame(({ clock }) => {
     const progress = scrollState.progress
 
     // Center panel slides to the left starting at scroll 0.3
@@ -90,7 +95,7 @@ export default function HeroSection({
       const slideProgress = Math.max(0, (progress - 0.4) / 0.7)
       centerGroupRef.current.position.x = THREE.MathUtils.lerp(
         0,
-        -1.2,
+        -1.3,
         slideProgress
       )
     }
@@ -103,7 +108,6 @@ export default function HeroSection({
               height: panelProps.height,
               width: panelProps.width,
               borderRadius: panelProps.borderRadius,
-              // rotation: progress >= 0.9 ? [0, 0.5, 0] : [0, 0, 0],
             }
           : {
               height: 1,
@@ -132,6 +136,10 @@ export default function HeroSection({
       setShowSurrounding(shouldShow)
     }
 
+    // Rotate background end color hue to match shader cycling
+    const hueOffset = ((clock.getElapsedTime() * 0.1) / (Math.PI * 2)) % 1
+    bgColorEnd.setHSL((bgBaseHSL.h + hueOffset) % 1, bgBaseHSL.s, bgBaseHSL.l)
+
     // Transition background color toward control center section
     const bgT = Math.max(0, Math.min(1, (progress - 0.7) / 0.25))
     ;(scene.background as THREE.Color).copy(bgColorStart).lerp(bgColorEnd, bgT)
@@ -140,23 +148,9 @@ export default function HeroSection({
   return (
     <group>
       {/* Lighting */}
-      <directionalLight
-        position={[5, 5, 5]}
-        intensity={1.5}
-        color="#ffffff"
-        castShadow
-      />
-      <directionalLight
-        position={[-5, 3, -5]}
-        intensity={0.8}
-        color="#667eea"
-      />
       <ambientLight intensity={0.6} />
-      <pointLight position={[2, 2, 3]} intensity={1.5} color="#ec4899" />
-      <pointLight position={[-2, -1, 2]} intensity={1} color="#667eea" />
 
       {/* Grid pattern behind glass for refraction */}
-      {/* <RefractionGrid scrollState={scrollState} /> */}
       <BackgroundShader scrollState={scrollState} />
 
       {/* Center panel group - slides left on scroll */}
@@ -169,7 +163,7 @@ export default function HeroSection({
         >
           <LiquidGlass
             ref={centerRef}
-            borderSmoothness={20}
+            borderSmoothness={50}
             position={CENTER_POSITION}
             color={centerColor}
             transmission={panelProps.transmission}
@@ -182,7 +176,7 @@ export default function HeroSection({
             whileTap={CENTER_WHILE_TAP}
             onClick={handleCenterClick}
             extrudeSettings={CENTER_EXTRUDE_SETTINGS}
-            springStrength={3}
+            springStrength={4}
             damping={0.7}
           >
             <MeshTransmissionMaterial
