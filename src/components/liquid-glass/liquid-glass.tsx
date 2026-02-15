@@ -408,8 +408,12 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
   }
 
   // Animation frame loop
-  useFrame((_, delta) => {
+  useFrame((_, rawDelta) => {
     if (!meshRef.current) return
+
+    // Clamp delta to avoid spring explosions after tab switch
+    // (requestAnimationFrame pauses in background tabs, causing huge deltas)
+    const delta = Math.min(rawDelta, 1 / 30)
 
     const state = animationState.current
     let geometryNeedsUpdate = false
