@@ -57,14 +57,14 @@ export interface LiquidGlassProps {
    * When false, no animation plays on tap unless whileTap is explicitly provided.
    * @default true
    */
-  animateOnTap?: boolean
+  tapEffect?: boolean
 
   /**
    * Enable/disable the default hover animation.
    * When false, no animation plays on hover unless whileHover is explicitly provided.
    * @default true
    */
-  animateOnHover?: boolean
+  hoverEffect?: boolean
 
   // State
   active?: boolean

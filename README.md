@@ -99,10 +99,10 @@ Values are automatically clamped to half the smallest dimension.
 | `whileTap` | `AnimationValues` | Animation when pressed |
 | `whileActive` | `AnimationValues` | Animation when active |
 | `whileDisabled` | `AnimationValues` | Animation when disabled |
-| `animateOnHover` | `boolean` | Enable default hover animation (default: `true`) |
-| `animateOnTap` | `boolean` | Enable default tap animation (default: `true`) |
+| `hoverEffect` | `boolean` | Enable default hover animation (default: `true`) |
+| `tapEffect` | `boolean` | Enable default tap animation (default: `true`) |
 
-When `animateOnHover` or `animateOnTap` is `true` and no explicit `whileHover`/`whileTap` is provided, built-in defaults are used (scale 1.1 for hover, scale 0.95 for tap). Set to `false` to disable default animations entirely.
+When `hoverEffect` or `tapEffect` is `true` and no explicit `whileHover`/`whileTap` is provided, built-in defaults are used (scale 1.1 for hover, scale 0.95 for tap). Set to `false` to disable default animations entirely.
 
 ### AnimationValues
 
@@ -379,8 +379,8 @@ const [active, setActive] = useState(false)
 <LiquidGlass
   width={1.5}
   height={1}
-  animateOnHover={false}
-  animateOnTap={false}
+  hoverEffect={false}
+  tapEffect={false}
   whileHover={{ rotateY: 0.1 }}  // Only this custom animation plays on hover
 />
 ```

@@ -264,7 +264,7 @@ export default function HeroSection({
               chromaticAberration={0.08}
               thickness={0.9}
               whileHover={{ scale: 1.15, rotateZ: 0.1 }}
-              animateOnTap={false}
+              tapEffect={false}
               extrudeSettings={{
                 depth: 0.01,
                 bevelEnabled: true,
@@ -298,7 +298,7 @@ export default function HeroSection({
               chromaticAberration={0.1}
               thickness={0.6}
               whileHover={{ scale: 1.2 }}
-              animateOnTap={false}
+              tapEffect={false}
               extrudeSettings={{
                 depth: 0.005,
                 bevelEnabled: true,
@@ -337,7 +337,7 @@ export default function HeroSection({
               chromaticAberration={0.05}
               thickness={0.6}
               whileHover={{ scale: 1.1, rotateY: -0.15 }}
-              animateOnTap={false}
+              tapEffect={false}
               extrudeSettings={{
                 depth: 0.015,
                 bevelEnabled: true,
@@ -369,7 +369,7 @@ export default function HeroSection({
               roughness={0}
               ior={2.5}
               chromaticAberration={0.15}
-              animateOnTap={false}
+              tapEffect={false}
               thickness={0.7}
               whileHover={{ scale: 1.3 }}
               extrudeSettings={{

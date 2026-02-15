@@ -80,8 +80,8 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     whileDisabled,
 
     // Animation toggles
-    animateOnTap = true,
-    animateOnHover = true,
+    tapEffect = true,
+    hoverEffect = true,
 
     // State
     active = false,
@@ -262,21 +262,21 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     }
 
     if (isPressed) {
-      // Only apply tap animation if animateOnTap is true or whileTap is explicitly provided
-      if (animateOnTap || whileTap) {
+      // Only apply tap animation if tapEffect is true or whileTap is explicitly provided
+      if (tapEffect || whileTap) {
         return mergeAnimations(
           baseAnimation,
-          whileTap || (animateOnTap ? DEFAULT_ANIMATIONS.whileTap : {})
+          whileTap || (tapEffect ? DEFAULT_ANIMATIONS.whileTap : {})
         )
       }
     }
 
     if (isHovered) {
-      // Only apply hover animation if animateOnHover is true or whileHover is explicitly provided
-      if (animateOnHover || whileHover) {
+      // Only apply hover animation if hoverEffect is true or whileHover is explicitly provided
+      if (hoverEffect || whileHover) {
         return mergeAnimations(
           baseAnimation,
-          whileHover || (animateOnHover ? DEFAULT_ANIMATIONS.whileHover : {})
+          whileHover || (hoverEffect ? DEFAULT_ANIMATIONS.whileHover : {})
         )
       }
     }
@@ -291,8 +291,8 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     whileTap,
     whileHover,
     whileActive,
-    animateOnTap,
-    animateOnHover,
+    tapEffect,
+    hoverEffect,
   ])
 
   // Apply animation targets
@@ -547,16 +547,20 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
   const parsedColor = useMemo(() => parseColor(color), [color])
 
   // Event handlers
+  const isClickable = !!(onClick || onToggle)
+
   const handlePointerEnter = useCallback(() => {
     if (disabled) return
+    if (isClickable) document.body.style.cursor = "pointer"
     setIsHovered(true)
     onHoverStart?.()
-  }, [disabled, onHoverStart])
+  }, [disabled, isClickable, onHoverStart])
 
   const handlePointerLeave = useCallback(() => {
+    if (isClickable) document.body.style.cursor = "auto"
     setIsHovered(false)
     onHoverEnd?.()
-  }, [onHoverEnd])
+  }, [isClickable, onHoverEnd])
 
   const handlePointerDown = useCallback(() => {
     if (disabled) return
