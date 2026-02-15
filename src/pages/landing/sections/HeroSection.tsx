@@ -190,7 +190,8 @@ export default function HeroSection({
     <group>
       {/* Lighting */}
       <ambientLight intensity={0.6} />
-      <directionalLight intensity={10} position={[1, 1, 2]} />
+      <directionalLight intensity={4} position={[1, 1, 3]} />
+      <directionalLight intensity={4} position={[-4, -3, 3]} />
 
       {/* Grid pattern behind glass for refraction */}
       <BackgroundShader scrollState={scrollState} />
