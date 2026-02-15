@@ -287,7 +287,7 @@ export default function HeroSection({
               }}
               positionSpring={{
                 strength: 2,
-                damping: 0.65,
+                damping: 0.8,
               }}
               rotationSpring={{
                 strength: 1,
@@ -321,7 +321,7 @@ export default function HeroSection({
               }}
               positionSpring={{
                 strength: 2,
-                damping: 0.65,
+                damping: 0.8,
               }}
               rotationSpring={{
                 strength: 1,
@@ -360,7 +360,7 @@ export default function HeroSection({
               }}
               positionSpring={{
                 strength: 2,
-                damping: 0.65,
+                damping: 0.8,
               }}
               rotationSpring={{
                 strength: 1,
@@ -394,7 +394,7 @@ export default function HeroSection({
               }}
               positionSpring={{
                 strength: 2,
-                damping: 0.65,
+                damping: 0.8,
               }}
               rotationSpring={{
                 strength: 1,
