@@ -1,11 +1,22 @@
 import * as THREE from "three"
+import type { ExtrudeSettings, SpringConfig } from "./types"
+
+export const DEFAULT_POSITION: [number, number, number] = [0, 0, 0]
+export const DEFAULT_ROTATION: [number, number, number] = [0, 0, 0]
 
 export const DEFAULT_PROPS = {
+  // Geometry
   width: 1,
   height: 1,
   borderRadius: 0.2,
-  borderSmoothness: 30,
-  position: [0, 0, 0] as [number, number, number],
+  borderSmoothness: 12, // Low value for performance - increase for larger panels
+
+  // Transform
+  position: DEFAULT_POSITION,
+  rotation: DEFAULT_ROTATION,
+  scale: 1,
+
+  // Material
   transmission: 1,
   roughness: 0,
   ior: 2.5,
@@ -15,16 +26,34 @@ export const DEFAULT_PROPS = {
   color: new THREE.Color(1, 1, 1),
   thickness: 0.35,
   wireframe: false,
+
+  // State
+  visible: true,
+
+  // Animation - default spring settings
   springStrength: 15,
   damping: 0.8,
   animationThreshold: 0.001,
+
+  // Per-animation-type spring configs (override defaults above)
+  positionSpring: {
+    strength: 15,
+    damping: 0.8,
+  } as SpringConfig,
+
+  rotationSpring: {
+    strength: 15,
+    damping: 0.8,
+  } as SpringConfig,
+
+  // Extrude settings - optimized for performance (<150k triangles)
   extrudeSettings: {
     depth: 0,
     bevelEnabled: true,
     bevelThickness: 0.02,
     bevelSize: 0.03,
-    bevelSegments: 50,
-  },
+    bevelSegments: 8, // Low value for performance - increase for larger panels
+  } as ExtrudeSettings,
 }
 
 export const DEFAULT_ANIMATIONS = {
@@ -33,3 +62,42 @@ export const DEFAULT_ANIMATIONS = {
   whileActive: { scale: 1.1 },
   whileDisabled: { scale: 0.9, opacity: 0.5 },
 }
+
+// Material presets for common use cases
+export const MATERIAL_PRESETS = {
+  // Classic Apple-style frosted glass
+  frosted: {
+    transmission: 0.95,
+    roughness: 0.15,
+    ior: 1.5,
+    chromaticAberration: 0.02,
+    thickness: 0.5,
+  },
+  // Crystal clear glass
+  crystal: {
+    transmission: 1,
+    roughness: 0,
+    ior: 2.5,
+    chromaticAberration: 0.05,
+    thickness: 0.3,
+  },
+  // Water droplet effect
+  water: {
+    transmission: 1,
+    roughness: 0,
+    ior: 1.33,
+    chromaticAberration: 0.1,
+    thickness: 0.8,
+  },
+  // Soft blur effect
+  blur: {
+    transmission: 0.9,
+    roughness: 0.3,
+    ior: 1.4,
+    chromaticAberration: 0,
+    thickness: 0.2,
+    anisotropicBlur: 0.5,
+  },
+} as const
+
+export type MaterialPreset = keyof typeof MATERIAL_PRESETS
