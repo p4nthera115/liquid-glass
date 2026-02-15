@@ -94,7 +94,7 @@ export default function ControlPanel({
         <SliderRow
           label="Border Radius"
           value={panelProps.borderRadius}
-          min={0}
+          min={0.1}
           max={1}
           step={0.01}
           onChange={(v) => update("borderRadius", v)}
