@@ -4,7 +4,7 @@ import { easing } from "maath"
 import { LiquidGlass } from "../../../components/liquid-glass"
 import type { LiquidGlassHandle } from "../../../components/liquid-glass"
 import * as THREE from "three"
-import { useState, useCallback, useRef, useMemo } from "react"
+import { useState, useCallback, useRef, useMemo, useEffect } from "react"
 import type { ScrollState } from "../LandingPage"
 import type { PanelProps } from "./panel-types"
 // import RefractionGrid from "./RefractionGrid"
@@ -12,10 +12,10 @@ import BackgroundShader from "./BackgroundShader"
 
 // Positions for the 4 surrounding panels (clockwise: top-left, top-right, bottom-right, bottom-left)
 const PANEL_POSITIONS: [number, number, number][] = [
-  [-1.2, 0.5, -0.3], // Top left
+  [-1.25, 0.6, -0.3], // Top left
   [1.1, 0.7, 0.2], // Top right
   [1.2, -0.2, -0.2], // Bottom right
-  [-0.9, -0.4, 0.3], // Bottom left
+  [-1, -0.4, 0.3], // Bottom left
 ]
 
 // Rotations for each position
@@ -53,12 +53,28 @@ export default function HeroSection({
   const [panelOffsets, setPanelOffsets] = useState([0, 1, 2, 3])
   const [showSurrounding, setShowSurrounding] = useState(true)
   const showSurroundingRef = useRef(true)
+  const [entryOffsets, setEntryOffsets] = useState([3, 3, 3, 3])
 
   const centerRef = useRef<LiquidGlassHandle>(null)
   const centerGroupRef = useRef<THREE.Group>(null)
   const surroundingGroupRef = useRef<THREE.Group>(null)
   const textRef = useRef<THREE.Mesh>(null)
   const textFadeStart = useRef(-1)
+
+  useEffect(() => {
+    centerRef.current?.setAnimationTargets({ scale: 1 })
+
+    const timers = [0, 1, 2, 3].map((i) =>
+      setTimeout(() => {
+        setEntryOffsets((prev) => {
+          const next = [...prev]
+          next[i] = 0
+          return next
+        })
+      }, 200 + i * 150)
+    )
+    return () => timers.forEach(clearTimeout)
+  }, [])
 
   const scene = useThree((s) => s.scene)
   const bgColorStart = useMemo(() => new THREE.Color("#ffffff"), [])
@@ -83,7 +99,8 @@ export default function HeroSection({
   }, [])
 
   const getPosition = (panelIndex: number): [number, number, number] => {
-    return PANEL_POSITIONS[panelOffsets[panelIndex]]
+    const pos = PANEL_POSITIONS[panelOffsets[panelIndex]]
+    return [pos[0], pos[1] + entryOffsets[panelIndex], pos[2]]
   }
 
   const getRotation = (panelIndex: number): [number, number, number] => {
@@ -144,7 +161,7 @@ export default function HeroSection({
       if (textFadeStart.current < 0)
         textFadeStart.current = clock.getElapsedTime()
       const elapsed = clock.getElapsedTime() - textFadeStart.current
-      const t = Math.min(1, elapsed * 4)
+      const t = Math.min(1, elapsed * 8)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(textRef.current as any).fillOpacity = t
       easing.damp(textRef.current.position, "y", 0.2, 0.15, delta * 2)
@@ -178,6 +195,8 @@ export default function HeroSection({
           <LiquidGlass
             ref={centerRef}
             borderSmoothness={50}
+            scale={0}
+            borderRadius={1}
             position={CENTER_POSITION}
             color={centerColor}
             transmission={panelProps.transmission}
@@ -191,8 +210,7 @@ export default function HeroSection({
             onClick={handleCenterClick}
             extrudeSettings={CENTER_EXTRUDE_SETTINGS}
             springStrength={4}
-            scale={0}
-            damping={0.7}
+            damping={0.8}
           >
             <MeshTransmissionMaterial
               transmission={panelProps.transmission}
@@ -244,7 +262,7 @@ export default function HeroSection({
               roughness={0.05}
               ior={2.2}
               chromaticAberration={0.08}
-              thickness={0.6}
+              thickness={0.9}
               whileHover={{ scale: 1.15, rotateZ: 0.1 }}
               animateOnTap={false}
               extrudeSettings={{
@@ -256,7 +274,7 @@ export default function HeroSection({
               }}
               positionSpring={{
                 strength: 2,
-                damping: 0.75,
+                damping: 0.65,
               }}
               rotationSpring={{
                 strength: 1,
@@ -290,7 +308,7 @@ export default function HeroSection({
               }}
               positionSpring={{
                 strength: 2,
-                damping: 0.75,
+                damping: 0.65,
               }}
               rotationSpring={{
                 strength: 1,
@@ -329,7 +347,7 @@ export default function HeroSection({
               }}
               positionSpring={{
                 strength: 2,
-                damping: 0.75,
+                damping: 0.65,
               }}
               rotationSpring={{
                 strength: 1,
@@ -352,7 +370,7 @@ export default function HeroSection({
               ior={2.5}
               chromaticAberration={0.15}
               animateOnTap={false}
-              thickness={0.45}
+              thickness={0.7}
               whileHover={{ scale: 1.3 }}
               extrudeSettings={{
                 depth: 0.005,
@@ -363,7 +381,7 @@ export default function HeroSection({
               }}
               positionSpring={{
                 strength: 2,
-                damping: 0.75,
+                damping: 0.65,
               }}
               rotationSpring={{
                 strength: 1,
