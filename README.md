@@ -2,7 +2,7 @@
 
 A performant React Three Fiber component for creating Apple-style liquid glass effects in 3D.
 
-![Liquid Glass Demo](https://via.placeholder.com/800x400/0a0a0f/667eea?text=Liquid+Glass)
+[Live Demo](https://liquid-glass-wine.vercel.app/)
 
 ## Features
 
