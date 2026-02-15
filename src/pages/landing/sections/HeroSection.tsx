@@ -1,5 +1,6 @@
 import { Float, MeshTransmissionMaterial, Text } from "@react-three/drei"
 import { useFrame, useThree } from "@react-three/fiber"
+import { easing } from "maath"
 import { LiquidGlass } from "../../../components/liquid-glass"
 import type { LiquidGlassHandle } from "../../../components/liquid-glass"
 import * as THREE from "three"
@@ -56,6 +57,8 @@ export default function HeroSection({
   const centerRef = useRef<LiquidGlassHandle>(null)
   const centerGroupRef = useRef<THREE.Group>(null)
   const surroundingGroupRef = useRef<THREE.Group>(null)
+  const textRef = useRef<THREE.Mesh>(null)
+  const textFadeStart = useRef(-1)
 
   const scene = useThree((s) => s.scene)
   const bgColorStart = useMemo(() => new THREE.Color("#ffffff"), [])
@@ -87,7 +90,7 @@ export default function HeroSection({
     return PANEL_ROTATIONS[panelOffsets[panelIndex]]
   }
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
     const progress = scrollState.progress
 
     // Center panel slides to the left starting at scroll 0.3
@@ -136,6 +139,17 @@ export default function HeroSection({
       setShowSurrounding(shouldShow)
     }
 
+    // Fade in text opacity using elapsed time for smooth interpolation
+    if (textRef.current) {
+      if (textFadeStart.current < 0)
+        textFadeStart.current = clock.getElapsedTime()
+      const elapsed = clock.getElapsedTime() - textFadeStart.current
+      const t = Math.min(1, elapsed * 4)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(textRef.current as any).fillOpacity = t
+      easing.damp(textRef.current.position, "y", 0.2, 0.15, delta * 2)
+    }
+
     // Rotate background end color hue to match shader cycling
     const hueOffset = ((clock.getElapsedTime() * 0.1) / (Math.PI * 2)) % 1
     bgColorEnd.setHSL((bgBaseHSL.h + hueOffset) % 1, bgBaseHSL.s, bgBaseHSL.l)
@@ -177,6 +191,7 @@ export default function HeroSection({
             onClick={handleCenterClick}
             extrudeSettings={CENTER_EXTRUDE_SETTINGS}
             springStrength={4}
+            scale={0}
             damping={0.7}
           >
             <MeshTransmissionMaterial
@@ -200,9 +215,14 @@ export default function HeroSection({
           position={[0, scrollState.progress * 3, 0]}
           scale={Math.max(0.01, 1 - scrollState.progress * 2.5)}
         >
-          <Text fontSize={1.8} position={[0, 0.2, -0.8]}>
+          <Text
+            ref={textRef}
+            fontSize={1.8}
+            position={[0, 0, -0.8]}
+            fillOpacity={0}
+            color="#000"
+          >
             Liquid
-            <meshStandardMaterial color="#000" />
           </Text>
 
           {/* Panel 0: Circle (starts top-left) */}
