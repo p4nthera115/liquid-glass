@@ -81,10 +81,15 @@ export default function LandingPage() {
       <div className="scroll-content">
         {/* Hero spacer - pointer-events: none lets clicks through to canvas */}
         <section className="hero-spacer">
-          <div className="hero-hints">
-            <div className="border border-black/30 rounded-sm px-6 py-2 text-black">
-              <pre>npm install @liquid-glass/react</pre>
-            </div>
+          <div className="hero-hints font-mono">
+            <a
+              href="https://github.com/p4nthera115/liquid-glass"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-black/30 rounded-sm px-6 py-2 text-black no-underline"
+            >
+              View on GitHub
+            </a>
             <div className="flex gap-4 font-semibold text-xs text-black/35 text-center justify-center items-center">
               <span>Scroll</span>
               <span>Click centre panel</span>
