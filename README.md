@@ -6,13 +6,14 @@ A performant React Three Fiber component for creating Apple-style liquid glass e
 
 ## Features
 
-- 🎨 **Apple-style liquid glass aesthetic** - Transmission materials with chromatic aberration
-- ⚡ **Performance optimized** - Geometry cached, animations use GPU transforms
-- 🎭 **Interactive states** - Built-in hover, tap, active, and disabled animations
-- 🔄 **Spring physics** - Natural feeling animations with configurable spring/damping
-- 📐 **Flexible geometry** - Customizable rounded rectangles with beveled edges
-- 🎯 **TypeScript** - Full type definitions included
-- ♿ **Accessible** - ARIA label support
+- **Apple-style liquid glass aesthetic** — Transmission materials with chromatic aberration
+- **Performance optimized** — Geometry cached, animations use GPU transforms
+- **Interactive states** — Built-in hover, tap, active, and disabled animations
+- **Spring physics** — Natural feeling animations with configurable spring/damping per animation type
+- **Flexible geometry** — Rounded rectangles with per-corner border radius and beveled edges
+- **Imperative animation API** — `setAnimationTargets` for flicker-free programmatic control
+- **TypeScript** — Full type definitions included
+- **Accessible** — ARIA label and tabIndex support
 
 ## Installation
 
@@ -51,8 +52,22 @@ function App() {
 |------|------|---------|-------------|
 | `width` | `number` | `1` | Width of the glass panel |
 | `height` | `number` | `1` | Height of the glass panel |
-| `borderRadius` | `number` | `0.2` | Corner radius |
-| `borderSmoothness` | `number` | `30` | Smoothness of corner curves |
+| `borderRadius` | `BorderRadius` | `0.2` | Corner radius — single number or per-corner array |
+| `borderSmoothness` | `number` | `12` | Smoothness of corner curves (increase for larger panels) |
+
+### BorderRadius
+
+Border radius accepts either a single number (all corners equal) or a 4-element tuple for per-corner control:
+
+```ts
+type BorderRadius = number | [topLeft, topRight, bottomRight, bottomLeft]
+
+// Examples
+borderRadius={0.3}                    // All corners 0.3
+borderRadius={[0.5, 0.5, 0.1, 0.1]}  // Rounded top, sharp bottom
+```
+
+Values are automatically clamped to half the smallest dimension.
 
 ### Transform
 
@@ -70,6 +85,7 @@ function App() {
 | `roughness` | `number` | `0` | Surface roughness |
 | `ior` | `number` | `2.5` | Index of refraction |
 | `chromaticAberration` | `number` | `0` | Rainbow edge effect |
+| `anisotropicBlur` | `number` | `0` | Directional blur effect |
 | `thickness` | `number` | `0.35` | Material thickness |
 | `color` | `string \| THREE.Color` | `white` | Tint color |
 | `wireframe` | `boolean` | `false` | Show wireframe |
@@ -83,32 +99,76 @@ function App() {
 | `whileTap` | `AnimationValues` | Animation when pressed |
 | `whileActive` | `AnimationValues` | Animation when active |
 | `whileDisabled` | `AnimationValues` | Animation when disabled |
+| `animateOnHover` | `boolean` | Enable default hover animation (default: `true`) |
+| `animateOnTap` | `boolean` | Enable default tap animation (default: `true`) |
+
+When `animateOnHover` or `animateOnTap` is `true` and no explicit `whileHover`/`whileTap` is provided, built-in defaults are used (scale 1.1 for hover, scale 0.95 for tap). Set to `false` to disable default animations entirely.
 
 ### AnimationValues
 
 ```ts
 interface AnimationValues {
-  x?: number        // Position X
-  y?: number        // Position Y
-  z?: number        // Position Z
-  scale?: number    // Uniform scale
-  scaleX?: number   // X-axis scale
-  scaleY?: number   // Y-axis scale
-  scaleZ?: number   // Z-axis scale
-  rotateX?: number  // X rotation (radians)
-  rotateY?: number  // Y rotation (radians)
-  rotateZ?: number  // Z rotation (radians)
-  opacity?: number  // Opacity (0-1)
+  // Position
+  x?: number           // Position X
+  y?: number           // Position Y
+  z?: number           // Position Z
+
+  // Uniform scale (scales everything including border radius)
+  scale?: number
+
+  // Dimensional scale (preserves border radius by regenerating geometry)
+  scaleX?: number      // Multiplies base width
+  scaleY?: number      // Multiplies base height
+  scaleZ?: number      // Affects uniform scale
+
+  // Explicit dimensions (preserves border radius)
+  width?: number
+  height?: number
+
+  // Rotation (radians, added to base rotation)
+  rotateX?: number
+  rotateY?: number
+  rotateZ?: number
+
+  // Opacity
+  opacity?: number     // 0-1
+
+  // Border radius
+  borderRadius?: BorderRadius
 }
 ```
+
+**Scale behavior:**
+- `scale` / `scaleZ` — Uniform scale transform. Scales everything including border radius visually.
+- `scaleX` / `scaleY` — Multiplies base width/height and regenerates geometry. Border radius is preserved at its original size.
+- `width` / `height` — Animates to explicit dimensions. Border radius is preserved.
 
 ### Spring Animation
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `springStrength` | `number` | `15` | Spring stiffness |
-| `damping` | `number` | `0.8` | Damping factor |
-| `animationThreshold` | `number` | `0.001` | Min change to animate |
+| `springStrength` | `number` | `15` | Default spring stiffness for all animations |
+| `damping` | `number` | `0.8` | Default damping factor (0-1, higher = less bouncy) |
+| `animationThreshold` | `number` | `0.001` | Minimum change to continue animating |
+| `positionSpring` | `SpringConfig` | — | Spring config override for position animations |
+| `rotationSpring` | `SpringConfig` | — | Spring config override for rotation animations |
+
+```ts
+interface SpringConfig {
+  strength?: number  // Overrides springStrength for this animation type
+  damping?: number   // Overrides damping for this animation type
+}
+```
+
+`positionSpring` and `rotationSpring` allow different physics feels for different animation types. For example, a slow drift on position with a snappy rotation:
+
+```tsx
+<LiquidGlass
+  positionSpring={{ strength: 5, damping: 0.9 }}
+  rotationSpring={{ strength: 25, damping: 0.7 }}
+  whileHover={{ y: 0.2, rotateY: 0.1 }}
+/>
+```
 
 ### State & Callbacks
 
@@ -121,6 +181,15 @@ interface AnimationValues {
 | `onToggle` | `(active: boolean) => void` | Toggle handler |
 | `onHoverStart` | `() => void` | Hover start handler |
 | `onHoverEnd` | `() => void` | Hover end handler |
+| `onTapStart` | `() => void` | Pointer down handler |
+| `onTapEnd` | `() => void` | Pointer up handler |
+
+### Accessibility
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `aria-label` | `string` | ARIA label for the mesh |
+| `tabIndex` | `number` | Tab index for keyboard navigation |
 
 ### Extrude Settings
 
@@ -130,7 +199,67 @@ interface ExtrudeSettings {
   bevelEnabled?: boolean   // Enable beveled edges (default: true)
   bevelThickness?: number  // Bevel depth (default: 0.02)
   bevelSize?: number       // Bevel width (default: 0.03)
-  bevelSegments?: number   // Bevel smoothness (default: 32)
+  bevelSegments?: number   // Bevel smoothness (default: 8)
+}
+```
+
+## Imperative API: `setAnimationTargets`
+
+For programmatic animation control (e.g., orchestrated sequences, layout transitions), the component exposes an imperative handle via `ref`. This updates base and target values directly without triggering React re-renders, avoiding the flicker that can occur with prop-driven updates.
+
+```tsx
+import { useRef } from "react"
+import { LiquidGlass, LiquidGlassHandle } from "./components/liquid-glass"
+
+function AnimatedPanel() {
+  const glassRef = useRef<LiquidGlassHandle>(null)
+
+  const moveTo = (x: number, y: number) => {
+    glassRef.current?.setAnimationTargets({
+      position: [x, y, 0],
+    })
+  }
+
+  const resize = (w: number, h: number) => {
+    glassRef.current?.setAnimationTargets({
+      width: w,
+      height: h,
+    })
+  }
+
+  return (
+    <LiquidGlass
+      ref={glassRef}
+      width={1}
+      height={1}
+      whileHover={{ scale: 1.05 }}
+    />
+  )
+}
+```
+
+### AnimationTargetUpdate
+
+```ts
+interface AnimationTargetUpdate {
+  width?: number
+  height?: number
+  borderRadius?: BorderRadius
+  position?: [number, number, number]
+  rotation?: [number, number, number]
+  scale?: number
+}
+```
+
+Each field sets both the base value and the target value simultaneously. The spring animation then interpolates from the current value to the new target. Since base values are also updated, interaction animations (hover, tap) will use the new values as their origin.
+
+### LiquidGlassHandle
+
+The ref type extends `THREE.Mesh`, so you have full access to the underlying Three.js mesh in addition to the imperative API:
+
+```ts
+interface LiquidGlassHandle extends THREE.Mesh {
+  setAnimationTargets: (targets: AnimationTargetUpdate) => void
 }
 ```
 
@@ -155,18 +284,18 @@ MATERIAL_PRESETS.blur     // Strong blur effect
 
 The component is optimized for performance:
 
-1. **Geometry caching** - Shape geometry is only created when dimensions change, not during animations
-2. **GPU transforms** - Animations use scale/position/rotation transforms instead of geometry recreation
-3. **Spring physics in render loop** - No React re-renders during animation
-4. **Configurable quality** - Adjust `borderSmoothness` and `bevelSegments` for performance/quality tradeoff
+1. **Geometry caching** — Shape geometry is only created when dimensions change, not during scale/position/rotation animations
+2. **GPU transforms** — Scale, position, and rotation animations use direct mesh transforms instead of geometry recreation
+3. **Spring physics in render loop** — All animation state is stored in refs. No React re-renders during animation.
+4. **Configurable quality** — Adjust `borderSmoothness` and `bevelSegments` for performance/quality tradeoff
 
 ### Triangle Count Guidelines
 
 Keep total triangles under **150,000** for smooth performance:
 
-- Each panel with default settings ≈ 2,000-5,000 triangles
-- Reduce `bevelSegments` (default: 32) for fewer triangles
-- Reduce `borderSmoothness` (default: 30) for simpler corners
+- Each panel with default settings produces a low triangle count
+- Increase `bevelSegments` (default: 8) for smoother bevels at the cost of more triangles
+- Increase `borderSmoothness` (default: 12) for smoother corners on larger panels
 - Use the `r3f-perf` monitor to track triangle counts
 
 ## Examples
@@ -197,6 +326,17 @@ const [active, setActive] = useState(false)
 />
 ```
 
+### Per-Corner Border Radius
+
+```tsx
+<LiquidGlass
+  width={2}
+  height={1}
+  borderRadius={[0.5, 0.5, 0.1, 0.1]}  // Rounded top, sharp bottom
+  whileHover={{ borderRadius: [0.1, 0.1, 0.5, 0.5] }}  // Animate corners on hover
+/>
+```
+
 ### Rotated Panel
 
 ```tsx
@@ -204,8 +344,44 @@ const [active, setActive] = useState(false)
   width={2}
   height={1.5}
   position={[0, 0, 0]}
-  rotation={[0, Math.PI / 6, 0]}  // 30° Y rotation
+  rotation={[0, Math.PI / 6, 0]}  // 30 degree Y rotation
   whileHover={{ rotateY: 0.1 }}   // Additional rotation on hover
+/>
+```
+
+### Dimensional Animation (Preserves Border Radius)
+
+```tsx
+<LiquidGlass
+  width={1}
+  height={1}
+  borderRadius={0.2}
+  whileHover={{ width: 1.5, height: 1.2 }}  // Grows but corners stay 0.2
+  whileTap={{ scaleX: 0.9, scaleY: 0.9 }}   // Shrinks dimensions, corners stay 0.2
+/>
+```
+
+### Different Spring Physics Per Animation Type
+
+```tsx
+<LiquidGlass
+  width={2}
+  height={1}
+  positionSpring={{ strength: 5, damping: 0.95 }}   // Slow, smooth drift
+  rotationSpring={{ strength: 30, damping: 0.6 }}    // Snappy, bouncy rotation
+  whileHover={{ y: 0.3, rotateZ: 0.05 }}
+/>
+```
+
+### No Default Animations
+
+```tsx
+<LiquidGlass
+  width={1.5}
+  height={1}
+  animateOnHover={false}
+  animateOnTap={false}
+  whileHover={{ rotateY: 0.1 }}  // Only this custom animation plays on hover
 />
 ```
 
@@ -219,6 +395,23 @@ const [active, setActive] = useState(false)
     // ... custom material props
   />
 </LiquidGlass>
+```
+
+### Imperative Layout Animation
+
+```tsx
+const glassRef = useRef<LiquidGlassHandle>(null)
+
+// Smoothly animate to new layout without React re-render flicker
+useEffect(() => {
+  glassRef.current?.setAnimationTargets({
+    position: [newX, newY, 0],
+    width: newWidth,
+    height: newHeight,
+  })
+}, [newX, newY, newWidth, newHeight])
+
+<LiquidGlass ref={glassRef} width={1} height={1} />
 ```
 
 ## Development
@@ -241,12 +434,12 @@ src/
 ├── components/
 │   └── liquid-glass/
 │       ├── index.ts          # Exports
-│       ├── liquid-glass.tsx  # Main component
-│       ├── types.ts          # TypeScript interfaces
-│       ├── constants.ts      # Default values & presets
-│       └── utils.ts          # Geometry & utility functions
+│       ├── liquid-glass.tsx   # Main component
+│       ├── types.ts           # TypeScript interfaces
+│       ├── constants.ts       # Default values & presets
+│       └── utils.ts           # Geometry & utility functions
 └── pages/
-    └── landing/              # Demo landing page
+    └── landing/               # Demo landing page
         ├── LandingPage.tsx
         ├── landing.css
         └── sections/
@@ -254,29 +447,6 @@ src/
             ├── ShowcaseSection.tsx
             └── ControlCenterExample.tsx
 ```
-
-## Changes in This Version
-
-### Performance Improvements
-
-- **Removed geometry recreation during animations** - Previously, width/height animations would trigger geometry recreation on every frame. Now animations use GPU-accelerated scale transforms, only recreating geometry when base dimensions actually change.
-- **Reduced default bevelSegments** from 50 to 32 for better performance while maintaining visual quality.
-- **Extracted spring physics helper** for cleaner, more maintainable animation code.
-
-### New Features
-
-- **`rotation` prop** - Initial rotation for the component (Euler angles in radians)
-- **`scale` prop** - Initial scale, can be uniform number or `[x, y, z]` tuple
-- **`visible` prop** - Toggle visibility without unmounting
-- **`forwardRef` support** - Access the underlying THREE.Mesh via ref
-- **`children` prop** - Inject custom materials or content
-- **Material presets** - Pre-configured material settings (frosted, crystal, water, blur)
-
-### Improved Types
-
-- Separated `ExtrudeSettings` interface
-- Added `AnimationState` type for internal state management
-- Better documentation via JSDoc comments
 
 ## License
 
