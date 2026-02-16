@@ -113,6 +113,11 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     children,
   } = props
 
+  // Store animation objects in ref so getCurrentAnimation doesn't change
+  // identity on every render due to inline object prop references
+  const animationPropsRef = useRef({ whileHover, whileTap, whileActive, whileDisabled })
+  animationPropsRef.current = { whileHover, whileTap, whileActive, whileDisabled }
+
   // Parse initial scale prop
   const baseScale = useMemo((): number => {
     if (typeof scaleProp === "number") {
@@ -229,6 +234,11 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     ],
   })
 
+  // Serialize position/rotation for stable effect dependencies
+  // (avoids re-triggering effects when array references change but values are the same)
+  const positionKey = `${position[0]},${position[1]},${position[2]}`
+  const rotationKey = `${rotation[0]},${rotation[1]},${rotation[2]}`
+
   // Resolve spring configs - merge user overrides with defaults
   const resolvedPositionSpring = useMemo(
     (): Required<SpringConfig> => ({
@@ -247,7 +257,9 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
   )
 
   // Get current animation based on state with proper layering
+  // Reads animation objects from ref to avoid changing identity when inline props get new references
   const getCurrentAnimation = useCallback((): AnimationValues => {
+    const { whileHover, whileTap, whileActive, whileDisabled } = animationPropsRef.current
     let baseAnimation: AnimationValues = {}
 
     if (active) {
@@ -287,10 +299,6 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     isPressed,
     isHovered,
     active,
-    whileDisabled,
-    whileTap,
-    whileHover,
-    whileActive,
     tapEffect,
     hoverEffect,
   ])
@@ -373,13 +381,14 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
     state.baseHeight = height
     state.baseScale = baseScale
     state.baseBorderRadius = [...baseBorderRadiusArr]
-  }, [position, rotation, width, height, baseScale, baseBorderRadiusArr])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [positionKey, rotationKey, width, height, baseScale, baseBorderRadiusArr])
 
   // Re-apply animation when interaction state or props change
   useEffect(() => {
     const currentAnimation = getCurrentAnimation()
     applyAnimation(currentAnimation)
-  }, [getCurrentAnimation, applyAnimation, position, rotation, width, height, baseScale, baseBorderRadiusArr])
+  }, [getCurrentAnimation, applyAnimation, positionKey, rotationKey, width, height, baseScale, baseBorderRadiusArr])
 
   // Spring physics helper - accepts optional spring config override
   const springStep = (
@@ -591,8 +600,6 @@ const LiquidGlass = forwardRef<LiquidGlassHandle, LiquidGlassProps>((props, ref)
   return (
     <mesh
       ref={meshRef}
-      position={position}
-      rotation={rotation}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
       onPointerDown={handlePointerDown}

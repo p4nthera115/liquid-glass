@@ -220,7 +220,7 @@ export default function HeroSection({
             tapEffect={heroActive}
             onClick={heroActive ? handleCenterClick : undefined}
             extrudeSettings={CENTER_EXTRUDE_SETTINGS}
-            springStrength={4}
+            springStrength={6}
             damping={0.8}
           >
             <MeshTransmissionMaterial
@@ -284,8 +284,8 @@ export default function HeroSection({
                 bevelSegments: 6,
               }}
               positionSpring={{
-                strength: 2,
-                damping: 0.7,
+                strength: 2.5,
+                damping: 0.8,
               }}
               rotationSpring={{
                 strength: 1,
@@ -318,11 +318,8 @@ export default function HeroSection({
                 bevelSegments: 20,
               }}
               positionSpring={{
-                strength: 2,
-                damping: 0.7,
-              }}
-              rotationSpring={{
-                strength: 1,
+                strength: 2.5,
+                damping: 0.8,
               }}
             />
           </Float>
@@ -357,8 +354,8 @@ export default function HeroSection({
                 bevelSegments: 5,
               }}
               positionSpring={{
-                strength: 2,
-                damping: 0.7,
+                strength: 2.5,
+                damping: 0.8,
               }}
               rotationSpring={{
                 strength: 1,
@@ -391,8 +388,8 @@ export default function HeroSection({
                 bevelSegments: 20,
               }}
               positionSpring={{
-                strength: 2,
-                damping: 0.7,
+                strength: 2.5,
+                damping: 0.8,
               }}
               rotationSpring={{
                 strength: 1,
