@@ -7,7 +7,6 @@ import * as THREE from "three"
 import { useState, useCallback, useRef, useMemo, useEffect } from "react"
 import type { ScrollState } from "../LandingPage"
 import type { PanelProps } from "./panel-types"
-// import RefractionGrid from "./RefractionGrid"
 import BackgroundShader from "./BackgroundShader"
 
 // Positions for the 4 surrounding panels (clockwise: top-left, top-right, bottom-right, bottom-left)
@@ -136,7 +135,6 @@ export default function HeroSection({
               height: 1,
               width: 1,
               borderRadius: 0.5,
-              rotation: [0, 0, 0],
             }
       )
     }
